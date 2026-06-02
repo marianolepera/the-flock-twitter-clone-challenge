@@ -1,21 +1,3 @@
-import { Transform } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
-export class ListUsersDto {
-  @IsOptional()
-  @Transform(({ value }) =>
-    value === undefined ? undefined : parseInt(value, 10),
-  )
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Transform(({ value }) =>
-    value === undefined ? undefined : parseInt(value, 10),
-  )
-  @IsInt()
-  @Min(1)
-  @Max(50)
-  limit?: number;
-}
+export class ListUsersDto extends PaginationDto {}
