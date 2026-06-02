@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import type { StringValue } from 'ms';
+import { randomUUID } from 'node:crypto';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
@@ -150,6 +151,7 @@ export class AuthService {
       secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       expiresIn: (this.configService.get<string>('JWT_REFRESH_TTL') ??
         '7d') as StringValue,
+      jwtid: randomUUID(),
     });
 
     const tokenHash = await bcrypt.hash(rawRefreshToken, BCRYPT_ROUNDS);

@@ -60,12 +60,24 @@ export class InitSchema1717290000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query('CREATE INDEX "IDX_tweets_authorId_createdAt" ON "tweets" ("authorId", "createdAt")');
-    await queryRunner.query('CREATE INDEX "IDX_tweets_createdAt" ON "tweets" ("createdAt")');
-    await queryRunner.query('CREATE INDEX "IDX_follows_followerId" ON "follows" ("followerId")');
-    await queryRunner.query('CREATE INDEX "IDX_follows_followingId" ON "follows" ("followingId")');
-    await queryRunner.query('CREATE INDEX "IDX_likes_tweetId" ON "likes" ("tweetId")');
-    await queryRunner.query('CREATE INDEX "IDX_likes_userId" ON "likes" ("userId")');
+    await queryRunner.query(
+      'CREATE INDEX "IDX_tweets_authorId_createdAt" ON "tweets" ("authorId", "createdAt")',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_tweets_createdAt" ON "tweets" ("createdAt")',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_follows_followerId" ON "follows" ("followerId")',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_follows_followingId" ON "follows" ("followingId")',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_likes_tweetId" ON "likes" ("tweetId")',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_likes_userId" ON "likes" ("userId")',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -74,7 +86,9 @@ export class InitSchema1717290000000 implements MigrationInterface {
     await queryRunner.query('DROP INDEX IF EXISTS "IDX_follows_followingId"');
     await queryRunner.query('DROP INDEX IF EXISTS "IDX_follows_followerId"');
     await queryRunner.query('DROP INDEX IF EXISTS "IDX_tweets_createdAt"');
-    await queryRunner.query('DROP INDEX IF EXISTS "IDX_tweets_authorId_createdAt"');
+    await queryRunner.query(
+      'DROP INDEX IF EXISTS "IDX_tweets_authorId_createdAt"',
+    );
 
     await queryRunner.query('DROP TABLE IF EXISTS "likes"');
     await queryRunner.query('DROP TABLE IF EXISTS "follows"');
@@ -82,4 +96,3 @@ export class InitSchema1717290000000 implements MigrationInterface {
     await queryRunner.query('DROP TABLE IF EXISTS "users"');
   }
 }
-
