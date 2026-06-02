@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
+import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { Follow } from '../follows/entities/follow.entity';
 import { Like } from '../tweets/entities/like.entity';
 import { Tweet } from '../tweets/entities/tweet.entity';
@@ -13,7 +14,7 @@ export default new DataSource({
   username: process.env.DATABASE_USER ?? 'postgres',
   password: process.env.DATABASE_PASSWORD ?? 'postgres',
   database: process.env.DATABASE_NAME ?? 'twitter_clone',
-  entities: [User, Tweet, Follow, Like],
+  entities: [User, Tweet, Follow, Like, RefreshToken],
   migrations: ['src/migrations/*.{ts,js}'],
   migrationsTableName: 'migrations',
 });

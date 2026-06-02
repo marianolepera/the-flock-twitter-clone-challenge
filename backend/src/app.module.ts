@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import databaseConfig from './config/database.config';
+import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { HealthModule } from './health/health.module';
       useFactory: (configService: ConfigService) =>
         configService.get<TypeOrmModuleOptions>('database')!,
     }),
+    AuthModule,
     HealthModule,
   ],
 })
