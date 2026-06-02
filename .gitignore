@@ -8,8 +8,11 @@ coverage/
 
 # Environment
 .env
+**/.env
 .env.local
+**/.env.local
 .env.*.local
+**/.env.*.local
 
 # Logs
 *.log
