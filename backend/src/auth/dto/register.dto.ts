@@ -1,4 +1,5 @@
 import { IsEmail, IsString, Length, Matches } from 'class-validator';
+import { IsPassword } from '../../common/password.validation';
 
 export class RegisterDto {
   @IsEmail()
@@ -11,7 +12,6 @@ export class RegisterDto {
   })
   username: string;
 
-  @IsString()
-  @Length(8, 72)
+  @IsPassword()
   password: string;
 }

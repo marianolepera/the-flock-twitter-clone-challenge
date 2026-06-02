@@ -65,7 +65,7 @@ describe('AuthService', () => {
       service.register({
         email: 'a@a.com',
         username: 'alice',
-        password: 'password123',
+        password: 'Password123!',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
   });
@@ -79,7 +79,7 @@ describe('AuthService', () => {
   });
 
   it('login returns token pair for valid credentials', async () => {
-    const passwordHash = await bcrypt.hash('password123', 10);
+    const passwordHash = await bcrypt.hash('Password123!', 10);
     (userRepo.findOne as jest.Mock).mockResolvedValue({
       id: 'u1',
       email: 'a@a.com',
@@ -98,7 +98,7 @@ describe('AuthService', () => {
 
     const res = await service.login({
       email: 'a@a.com',
-      password: 'password123',
+      password: 'Password123!',
     });
 
     expect(res).toHaveProperty('accessToken');

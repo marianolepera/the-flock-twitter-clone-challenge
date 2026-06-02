@@ -34,7 +34,7 @@ describe('AppController (e2e)', () => {
     const registerRes = await request(server).post('/auth/register').send({
       email: 'alice@example.com',
       username: 'alice',
-      password: 'password123',
+      password: 'Password123!',
     });
     expect(registerRes.status).toBe(201);
     expect(registerRes.body).toHaveProperty('accessToken');
@@ -42,14 +42,14 @@ describe('AppController (e2e)', () => {
 
     const loginRes = await request(server).post('/auth/login').send({
       email: 'alice@example.com',
-      password: 'password123',
+      password: 'Password123!',
     });
     expect(loginRes.status).toBe(200);
     const accessToken = loginRes.body.accessToken as string;
     const refreshToken = loginRes.body.refreshToken as string;
 
     const meRes = await request(server)
-      .get('/auth/me')
+      .get('/users/alice')
       .set('Authorization', `Bearer ${accessToken}`);
     expect(meRes.status).toBe(200);
     expect(meRes.body).toHaveProperty('id');
