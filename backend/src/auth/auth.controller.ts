@@ -1,22 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { User } from '../users/entities/user.entity';
-
-interface AuthRequest extends Request {
-  user: User;
-}
 
 @Controller('auth')
 export class AuthController {
@@ -44,11 +29,5 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Body('refreshToken') refreshToken: string) {
     return this.authService.logout(refreshToken);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  me(@Request() req: AuthRequest) {
-    return req.user;
   }
 }
