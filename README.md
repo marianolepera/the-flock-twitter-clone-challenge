@@ -19,6 +19,9 @@ Monorepo con scaffolding inicial: **NestJS** (`backend/`) y **React + Vite** (`f
 ## Desarrollo local
 
 ```bash
+# Postgres (Docker)
+docker compose up -d
+
 # Backend (http://localhost:3000)
 cd backend
 npm install

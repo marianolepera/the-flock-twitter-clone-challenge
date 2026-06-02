@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: the-flock-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: twitter_clone
+    ports:
+      - "5432:5432"
+    volumes:
+      - the_flock_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d twitter_clone"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  the_flock_pgdata:
+
