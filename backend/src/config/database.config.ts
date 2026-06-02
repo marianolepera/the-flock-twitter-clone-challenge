@@ -15,7 +15,7 @@ export default registerAs(
     password: process.env.DATABASE_PASSWORD ?? 'postgres',
     database: process.env.DATABASE_NAME ?? 'twitter_clone',
     entities: [User, Tweet, Follow, Like],
-    synchronize: process.env.NODE_ENV !== 'production',
+    synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
     logging: process.env.DATABASE_LOGGING === 'true',
   }),
 );
