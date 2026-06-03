@@ -146,4 +146,43 @@ describe('UsersService', () => {
       }),
     ).resolves.toMatchObject({ email: 'new@a.com' });
   });
+
+  it('getProfileByUsername throws NotFoundException when user does not exist', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(service.getProfileByUsername('ghost')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('list returns paginated users', async () => {
+    (userRepo.findAndCount as jest.Mock).mockResolvedValue([[profile], 1]);
+
+    await expect(service.list(1, 10)).resolves.toEqual({
+      items: [profile],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+  });
+
+  it('search returns matching users', async () => {
+    (userRepo.find as jest.Mock).mockResolvedValue([profile]);
+
+    await expect(service.search('ali', 5)).resolves.toEqual([profile]);
+  });
+
+  it('updateProfile throws ConflictException when email is taken', async () => {
+    const passwordHash = await bcrypt.hash('Password123!', 10);
+    (userRepo.findOne as jest.Mock)
+      .mockResolvedValueOnce(mockUser({ passwordHash }))
+      .mockResolvedValueOnce({ id: 'u2' });
+
+    await expect(
+      service.updateProfile('u1', {
+        email: 'taken@a.com',
+        currentPassword: 'Password123!',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
 });

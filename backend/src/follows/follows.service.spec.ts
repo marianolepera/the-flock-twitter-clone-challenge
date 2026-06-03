@@ -138,4 +138,39 @@ describe('FollowsService', () => {
       limit: 10,
     });
   });
+
+  it('getFollowing returns paginated public profiles', async () => {
+    const following: User = {
+      id: 'u2',
+      email: 'b@b.com',
+      username: 'bob',
+      passwordHash: 'hash',
+      bio: '',
+      avatarUrl: 'https://example.com/a.svg',
+      tweets: [],
+      following: [],
+      followers: [],
+      likes: [],
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-02'),
+    };
+
+    (userRepo.findOne as jest.Mock).mockResolvedValue({ id: 'u1' });
+    (followRepo.findAndCount as jest.Mock).mockResolvedValue([
+      [{ following }],
+      1,
+    ]);
+
+    await expect(service.getFollowing('alice', 1, 10)).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          id: 'u2',
+          username: 'bob',
+        }),
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+  });
 });
