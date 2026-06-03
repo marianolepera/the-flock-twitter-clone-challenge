@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# Frontend — React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Twitter clone UI. Monorepo setup: **[root README](../README.md)**.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Tool | Purpose |
+|------|---------|
+| [React 19](https://react.dev/) + [Vite](https://vite.dev/) | UI and dev server |
+| [Tailwind CSS v4](https://tailwindcss.com/docs) | Styling, design tokens, dark mode |
+| [TanStack Query](https://tanstack.com/query/latest) | Server state |
+| [Zustand](https://zustand.docs.pmnd.rs/) | Client state (auth, theme) |
+| [Axios](https://axios-http.com/) | HTTP client |
+| [React Router](https://reactrouter.com/) | Routing (wired in upcoming commits) |
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## Environment
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend base URL | `http://localhost:3000` |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+For local dev, optional `frontend/.env`:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_URL=http://localhost:3000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Docker build uses the root `.env.example` / compose `VITE_API_URL` build arg.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server (http://localhost:5173) |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | ESLint |
+
+## Breakpoints (mobile-first)
+
+- **Mobile:** default (&lt; 640px)
+- **Tablet:** `sm:` (≥ 640px)
+- **Desktop:** `lg:` (≥ 1024px)
+
+## Theme
+
+Semantic colors and `.dark` mode are defined in `src/index.css`.
