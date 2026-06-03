@@ -50,3 +50,14 @@ Otros usuarios: `bob@example.com`, `carol@example.com`, etc. (misma contraseña)
 
 **Nota:** el seed borra users, tweets, follows, likes y refresh tokens antes de insertar.
 
+## Tests (backend)
+
+```bash
+cd backend
+npm test              
+npm run test:cov     
+npm run test:e2e      
+```
+
+Los e2e cubren: auth (register/login/refresh), follow, tweet, timeline, like y búsqueda de usuarios.
+

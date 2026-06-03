@@ -175,4 +175,42 @@ describe('TweetsService', () => {
       limit: 10,
     });
   });
+
+  it('like creates like and returns updated tweet', async () => {
+    const tweet = {
+      id: 't1',
+      authorId: 'u1',
+      content: 'hi',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    (tweetRepo.findOne as jest.Mock).mockResolvedValue(tweet);
+    (likeRepo.findOne as jest.Mock).mockResolvedValue(null);
+    (likeRepo.create as jest.Mock).mockImplementation((x) => x);
+    (likeRepo.save as jest.Mock).mockResolvedValue({});
+    (likeRepo.count as jest.Mock).mockResolvedValue(1);
+    (userRepo.findOne as jest.Mock).mockResolvedValue(authorSummary);
+
+    await expect(service.like('t1', 'u2')).resolves.toMatchObject({
+      id: 't1',
+      likesCount: 1,
+      likedByMe: true,
+    });
+  });
+
+  it('unlike removes like', async () => {
+    (tweetRepo.findOne as jest.Mock).mockResolvedValue({ id: 't1' });
+    (likeRepo.findOne as jest.Mock).mockResolvedValue({ id: 'l1' });
+    (likeRepo.remove as jest.Mock).mockResolvedValue({});
+
+    await expect(service.unlike('t1', 'u2')).resolves.toBeUndefined();
+  });
+
+  it('create throws when author not found', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(
+      service.create('missing', { content: 'Hello' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
 });

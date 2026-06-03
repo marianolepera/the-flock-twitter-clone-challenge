@@ -1,11 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
 import dataSource from '../src/database/data-source';
+import { createE2eApp } from './helpers/e2e-app';
 
-describe('AppController (e2e)', () => {
+const PASSWORD = 'Password123!';
+
+describe('Auth API (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
@@ -14,54 +15,10 @@ describe('AppController (e2e)', () => {
     }
     await dataSource.dropDatabase();
     await dataSource.runMigrations({ transaction: 'all' });
-    await dataSource.query(
-      'TRUNCATE TABLE "refresh_tokens", "likes", "follows", "tweets", "users" RESTART IDENTITY CASCADE',
-    );
   });
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  it('register -> login -> me -> refresh rotates token', async () => {
-    const server = app.getHttpServer();
-
-    const registerRes = await request(server).post('/auth/register').send({
-      email: 'alice@example.com',
-      username: 'alice',
-      password: 'Password123!',
-    });
-    expect(registerRes.status).toBe(201);
-    expect(registerRes.body).toHaveProperty('accessToken');
-    expect(registerRes.body).toHaveProperty('refreshToken');
-
-    const loginRes = await request(server).post('/auth/login').send({
-      email: 'alice@example.com',
-      password: 'Password123!',
-    });
-    expect(loginRes.status).toBe(200);
-    const accessToken = loginRes.body.accessToken as string;
-    const refreshToken = loginRes.body.refreshToken as string;
-
-    const meRes = await request(server)
-      .get('/users/alice')
-      .set('Authorization', `Bearer ${accessToken}`);
-    expect(meRes.status).toBe(200);
-    expect(meRes.body).toHaveProperty('id');
-    expect(meRes.body).toHaveProperty('username', 'alice');
-
-    const refreshRes = await request(server)
-      .post('/auth/refresh')
-      .send({ refreshToken });
-    expect(refreshRes.status).toBe(200);
-    expect(refreshRes.body).toHaveProperty('accessToken');
-    expect(refreshRes.body).toHaveProperty('refreshToken');
-    expect(refreshRes.body.refreshToken).not.toBe(refreshToken);
+    app = await createE2eApp();
   });
 
   afterEach(async () => {
@@ -72,5 +29,62 @@ describe('AppController (e2e)', () => {
     if (dataSource.isInitialized) {
       await dataSource.destroy();
     }
+  });
+
+  it('register -> login -> profile -> refresh rotates token', async () => {
+    const server = app.getHttpServer();
+    const suffix = Date.now();
+
+    const registerRes = await request(server)
+      .post('/auth/register')
+      .send({
+        email: `alice-${suffix}@example.com`,
+        username: `alice${suffix}`,
+        password: PASSWORD,
+      });
+    expect(registerRes.status).toBe(201);
+    expect(registerRes.body).toHaveProperty('accessToken');
+    expect(registerRes.body).toHaveProperty('refreshToken');
+
+    const loginRes = await request(server)
+      .post('/auth/login')
+      .send({
+        email: `alice-${suffix}@example.com`,
+        password: PASSWORD,
+      });
+    expect(loginRes.status).toBe(200);
+    const accessToken = loginRes.body.accessToken as string;
+    const refreshToken = loginRes.body.refreshToken as string;
+    const username = loginRes.body.user.username as string;
+
+    const profileRes = await request(server)
+      .get(`/users/${username}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(profileRes.status).toBe(200);
+    expect(profileRes.body).toHaveProperty('username', username);
+
+    const refreshRes = await request(server)
+      .post('/auth/refresh')
+      .send({ refreshToken });
+    expect(refreshRes.status).toBe(200);
+    expect(refreshRes.body).toHaveProperty('accessToken');
+    expect(refreshRes.body).toHaveProperty('refreshToken');
+    const rotatedRefreshToken = refreshRes.body.refreshToken as string;
+    expect(rotatedRefreshToken).not.toBe(refreshToken);
+
+    const logoutRes = await request(server)
+      .post('/auth/logout')
+      .send({ refreshToken: rotatedRefreshToken });
+    expect(logoutRes.status).toBe(204);
+  });
+
+  it('rejects weak password on register', async () => {
+    const server = app.getHttpServer();
+    const res = await request(server).post('/auth/register').send({
+      email: 'weak@test.com',
+      username: 'weakuser',
+      password: 'weak',
+    });
+    expect(res.status).toBe(400);
   });
 });
