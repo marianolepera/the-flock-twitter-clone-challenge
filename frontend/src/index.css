@@ -1,111 +1,100 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import 'tailwindcss';
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+/*
+ * Breakpoints — mobile-first (challenge spec)
+ * sm: tablet  ≥ 640px  (40rem)
+ * lg: desktop ≥ 1024px (64rem)
+ */
+@theme {
+  --breakpoint-sm: 40rem;
+  --breakpoint-lg: 64rem;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* ── Brand ───────────────────────────────────── */
+  --color-brand:            #7c3aed;  /* violet-600 */
+  --color-brand-hover:      #6d28d9;  /* violet-700 */
+  --color-brand-muted:      #ede9fe;  /* violet-100 */
+  --color-brand-foreground: #ffffff;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* ── Neutral / surface (light defaults) ─────── */
+  --color-background:       #ffffff;
+  --color-surface:          #f7f9f9;
+  --color-surface-elevated: #ffffff;
+
+  /* ── Borders (light defaults) ────────────────── */
+  --color-border:           #eff3f4;
+  --color-border-strong:    #cfd9de;
+
+  /* ── Text (light defaults) ───────────────────── */
+  --color-foreground:       #0f1419;
+  --color-muted:            #536471;
+  --color-subtle:           #8899a6;
+
+  /* ── Interactive / action ────────────────────── */
+  --color-like:             #f91880;  /* heart */
+  --color-repost:           #00ba7c;  /* repost / share */
+  --color-reply:            #1d9bf0;  /* reply */
+
+  /* ── Status ──────────────────────────────────── */
+  --color-danger:           #f4212e;
+  --color-danger-muted:     #fce7f3;
+  --color-success:          #00ba7c;
+  --color-warning:          #ffad1f;
+
+  /* ── Typography ──────────────────────────────── */
+  --font-sans: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
+/*
+ * Dark mode — OS preference (Tailwind v4 default, zero JS required).
+ * Phase 2 (theme toggle): switch to class-based @custom-variant + Zustand store.
+ */
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+    /* brand */
+    --color-brand:            #a78bfa;  /* violet-400 */
+    --color-brand-hover:      #c4b5fd;  /* violet-300 */
+    --color-brand-muted:      #2e1065;  /* violet-950 */
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+    /* surface */
+    --color-background:       #000000;
+    --color-surface:          #16181c;
+    --color-surface-elevated: #1e2028;
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+    /* borders */
+    --color-border:           #2f3336;
+    --color-border-strong:    #536471;
 
-body {
-  margin: 0;
-}
+    /* text */
+    --color-foreground:       #e7e9ea;
+    --color-muted:            #71767b;
+    --color-subtle:           #536471;
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+    /* status */
+    --color-danger:           #f87171;
+    --color-danger-muted:     #450a0a;
+    --color-success:          #34d399;
+    --color-warning:          #fbbf24;
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+@layer base {
+  html {
+    @apply antialiased;
+    font-family: var(--font-sans);
+    color-scheme: light dark;
   }
-}
-p {
-  margin: 0;
-}
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+  body {
+    @apply bg-background text-foreground min-h-svh m-0;
+  }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  #root {
+    @apply min-h-svh;
+  }
 }
