@@ -5,6 +5,7 @@ import databaseConfig from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { FollowsModule } from './follows/follows.module';
+import { TweetsModule } from './tweets/tweets.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     HealthModule,
     FollowsModule,
+    TweetsModule,
     UsersModule,
   ],
 })
