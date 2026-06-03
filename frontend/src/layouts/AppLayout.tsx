@@ -1,9 +1,12 @@
-import { Home, Search, User } from 'lucide-react'
+import { Home, LogOut, Search, User } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import { Button } from '@/components/atoms/Button'
 import { Logo } from '@/components/atoms/Logo'
+import { useLogout } from '@/features/auth/hooks/use-auth-mutations'
 import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
+import { useAuthStore } from '@/stores/auth.store'
 
 const navItems = [
   { to: paths.home, label: 'Home', icon: Home, end: true },
@@ -45,6 +48,9 @@ function NavItem({
 }
 
 export function AppLayout() {
+  const user = useAuthStore((s) => s.user)
+  const logoutMutation = useLogout()
+
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-[1280px]">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border px-3 py-3 lg:flex">
@@ -56,6 +62,21 @@ export function AppLayout() {
             <NavItem key={item.to} {...item} />
           ))}
         </nav>
+        <div className="mt-auto space-y-3 px-3 py-4">
+          {user ? (
+            <p className="truncate text-sm text-muted">@{user.username}</p>
+          ) : null}
+          <Button
+            variant="ghost"
+            fullWidth
+            className="justify-start gap-3 px-3"
+            disabled={logoutMutation.isPending}
+            onClick={() => logoutMutation.mutate()}
+          >
+            <LogOut className="size-5 shrink-0" aria-hidden />
+            Log out
+          </Button>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

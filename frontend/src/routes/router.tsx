@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from '@/layouts/AppLayout'
 import { PublicLayout } from '@/layouts/PublicLayout'
 import { RequireAuth } from '@/layouts/RequireAuth'
+import { RequireGuest } from '@/layouts/RequireGuest'
 import { HomePage } from '@/pages/HomePage'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -16,9 +17,14 @@ export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-      { path: paths.landing, element: <LandingPage /> },
-      { path: paths.login, element: <LoginPage /> },
-      { path: paths.register, element: <RegisterPage /> },
+      {
+        element: <RequireGuest />,
+        children: [
+          { path: paths.landing, element: <LandingPage /> },
+          { path: paths.login, element: <LoginPage /> },
+          { path: paths.register, element: <RegisterPage /> },
+        ],
+      },
     ],
   },
   {
