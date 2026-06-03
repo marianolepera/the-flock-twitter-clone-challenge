@@ -16,6 +16,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { FollowsService } from '../follows/follows.service';
+import { TweetsService } from '../tweets/tweets.service';
 import { User } from './entities/user.entity';
 import { ListUsersDto } from './dto/list-users.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
@@ -32,6 +33,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly followsService: FollowsService,
+    private readonly tweetsService: TweetsService,
   ) {}
 
   @Get()
@@ -73,6 +75,20 @@ export class UsersController {
     @Query() query: PaginationDto,
   ) {
     return this.followsService.getFollowing(username, query.page, query.limit);
+  }
+
+  @Get(':username/tweets')
+  getUserTweets(
+    @Request() req: AuthRequest,
+    @Param('username') username: string,
+    @Query() query: PaginationDto,
+  ) {
+    return this.tweetsService.getByUsername(
+      username,
+      req.user.id,
+      query.page,
+      query.limit,
+    );
   }
 
   @Get(':username')
