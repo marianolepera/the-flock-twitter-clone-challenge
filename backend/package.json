@@ -17,6 +17,7 @@
     "migration:create": "typeorm-ts-node-commonjs migration:create src/migrations",
     "migration:run": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:run",
     "migration:revert": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:revert",
+    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
