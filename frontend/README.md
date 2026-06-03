@@ -46,6 +46,8 @@ Docker build uses the root `.env.example` / compose `VITE_API_URL` build arg.
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest (watch) |
+| `npm run test:run` | Vitest (single run, CI) |
 
 ## Breakpoints (mobile-first)
 
