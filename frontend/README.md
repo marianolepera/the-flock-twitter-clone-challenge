@@ -11,9 +11,18 @@ Twitter clone UI. Monorepo setup: **[root README](../README.md)**.
 | [TanStack Query](https://tanstack.com/query/latest) | Server state |
 | [Zustand](https://zustand.docs.pmnd.rs/) | Client state (auth, theme) |
 | [Axios](https://axios-http.com/) | HTTP client |
-| [React Router](https://reactrouter.com/) | Routing (wired in upcoming commits) |
+| [React Router](https://reactrouter.com/) | Routing |
+| [Lucide React](https://lucide.dev/) | Icons |
 
+Folder layout: **[src/STRUCTURE.md](./src/STRUCTURE.md)**.
 
+## Routes
+
+| Path | Page |
+|------|------|
+| `/` | Public landing |
+| `/login`, `/register` | Auth placeholders |
+| `/home`, `/search`, `/profile` | App shell (protected stub) |
 
 ## Environment
 

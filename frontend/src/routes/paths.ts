@@ -1,8 +1,9 @@
 export const paths = {
-  home: '/',
+  landing: '/',
   login: '/login',
   register: '/register',
+  home: '/home',
   search: '/search',
-  profile: (username: string) => `/${username}` as const,
   profileMe: '/profile',
+  profile: (username: string) => `/${username}` as const,
 } as const
