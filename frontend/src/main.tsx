@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import '@/api/axios-interceptors'
+
 import { AppProviders } from '@/providers/AppProviders'
 
 import App from './App.tsx'

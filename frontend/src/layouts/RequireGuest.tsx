@@ -1,12 +1,11 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 
 import { Spinner } from '@/components/atoms/Spinner'
 import { useAuthHydrated } from '@/hooks/use-auth-hydrated'
 import { paths } from '@/routes/paths'
 import { selectIsAuthenticated, useAuthStore } from '@/stores/auth.store'
 
-export function RequireAuth() {
-  const location = useLocation()
+export function RequireGuest() {
   const hydrated = useAuthHydrated()
   const isAuthenticated = useAuthStore(selectIsAuthenticated)
 
@@ -18,8 +17,8 @@ export function RequireAuth() {
     )
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to={paths.login} replace state={{ from: location }} />
+  if (isAuthenticated) {
+    return <Navigate to={paths.home} replace />
   }
 
   return <Outlet />

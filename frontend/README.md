@@ -21,8 +21,8 @@ Folder layout: **[src/STRUCTURE.md](./src/STRUCTURE.md)**.
 | Path | Page |
 |------|------|
 | `/` | Public landing |
-| `/login`, `/register` | Auth placeholders |
-| `/home`, `/search`, `/profile` | App shell (protected stub) |
+| `/login`, `/register` | Sign in / sign up |
+| `/home`, `/search`, `/profile` | App shell (protected) |
 
 ## Environment
 
