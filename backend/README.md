@@ -1,98 +1,448 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend — NestJS API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+REST API for the Twitter clone. Monorepo setup: **[root README](../README.md)**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- Base URL: `http://localhost:3000`
+- Format: JSON
+- Global validation: `ValidationPipe` (whitelist, `class-validator`)
 
-## Description
+Setup: **[local development](../README.md#local-development)** (recommended) or **[Docker full stack](../README.md#docker-full-stack)**.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Scripts
 
-```bash
-$ npm install
+| Command | Description |
+|---------|-------------|
+| `npm run start:dev` | Development with watch |
+| `npm run build` | Compile to `dist/` |
+| `npm run start:prod` | Run production build |
+| `npm run migration:run` | Apply migrations |
+| `npm run migration:revert` | Revert last migration |
+| `npm run seed` | Populate DB (destructive on domain tables) |
+| `npm test` | Unit tests |
+| `npm run test:cov` | Coverage (services + `jwt.strategy`) |
+| `npm run test:e2e` | E2E tests (Postgres required) |
+
+---
+
+## Environment variables
+
+Copy `../.env.example` to `backend/.env`. Full table in the [root README](../README.md#environment-variables).
+
+---
+
+## Authentication
+
+### Model
+
+- **Access token** (short JWT): send on every protected request.
+- **Refresh token** (long JWT + DB hash): rotated on `/auth/refresh`; logout revokes the token used.
+
+### Public routes (no JWT)
+
+| Method | Route | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/auth/register` | User registration |
+| `POST` | `/auth/login` | Login |
+| `POST` | `/auth/refresh` | Renew token pair |
+| `POST` | `/auth/logout` | Revoke refresh token |
+
+### Protected routes
+
+All `/users`, `/tweets`, and `/timeline` routes require:
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Endpoints — full reference
 
-# watch mode
-$ npm run start:dev
+### Health
 
-# production mode
-$ npm run start:prod
+#### `GET /health`
+
+**Auth:** none.
+
+**Response:** `200` — `{ "status": "ok", "database": "connected" }`.
+
+---
+
+### Auth
+
+#### `POST /auth/register`
+
+**Auth:** none.
+
+**Body:**
+
+```json
+{
+  "email": "user@example.com",
+  "username": "alice",
+  "password": "Password123!"
+}
 ```
 
-## Run tests
+- `password`: 8–72 characters, uppercase letter and special character (`@IsPassword()`).
 
-```bash
-# unit tests
-$ npm run test
+**Response:** `201`
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```json
+{
+  "accessToken": "...",
+  "refreshToken": "...",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "username": "alice",
+    "bio": "",
+    "avatarUrl": "",
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
 ```
 
-## Deployment
+**Errors:** `409` email/username in use; `400` validation.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+#### `POST /auth/login`
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+**Auth:** none.
+
+**Body:**
+
+```json
+{
+  "email": "alice@example.com",
+  "password": "Password123!"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Response:** `200` — same shape as register.
 
-## Resources
+**Errors:** `401` invalid credentials.
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+#### `POST /auth/refresh`
 
-## Support
+**Auth:** none.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Body:**
 
-## Stay in touch
+```json
+{
+  "refreshToken": "<refresh_jwt>"
+}
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Response:** `200`
 
-## License
+```json
+{
+  "accessToken": "...",
+  "refreshToken": "..."
+}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+The previous refresh token is revoked and linked to the new DB record.
+
+**Errors:** `401` invalid token or reuse detected (revokes all refresh tokens for the user).
+
+---
+
+#### `POST /auth/logout`
+
+**Auth:** none.
+
+**Body:**
+
+```json
+{
+  "refreshToken": "<refresh_jwt>"
+}
+```
+
+**Response:** `204` with no body. Invalid/expired token still returns `204` (idempotent).
+
+---
+
+### Users
+
+Controller uses `@UseGuards(JwtAuthGuard)` on all routes.
+
+#### `GET /users`
+
+**Query:**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | int | `1` | Page |
+| `limit` | int | `10` | Items per page (max per DTO) |
+
+**Response:** `200`
+
+```json
+{
+  "items": [ { "id", "email", "username", "bio", "avatarUrl", "createdAt", "updatedAt" } ],
+  "total": 12,
+  "page": 1,
+  "limit": 10
+}
+```
+
+---
+
+#### `GET /users/search`
+
+**Query:**
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `q` | string | yes | Search `username` and `email` (ILIKE) |
+| `limit` | int | no | Max results (service default: 10, max 50) |
+
+**Response:** `200` — array of public profiles.
+
+---
+
+#### `GET /users/:username`
+
+**Response:** `200` — public profile.
+
+**Errors:** `404` user not found.
+
+---
+
+#### `PATCH /users/:username`
+
+Own profile only (JWT `username` must match).
+
+**Body (all optional):**
+
+```json
+{
+  "username": "new_name",
+  "email": "new@example.com",
+  "bio": "Hello",
+  "avatarUrl": "https://example.com/avatar.png",
+  "currentPassword": "Password123!",
+  "newPassword": "NewPassword456!"
+}
+```
+
+- Changing `email` or `newPassword` requires `currentPassword`.
+
+**Response:** `200` — updated profile.
+
+**Errors:** `403` another user; `409` username/email taken; `401` wrong current password.
+
+---
+
+#### `POST /users/:username/follow`
+
+**Response:** `201` — `{ "following": true }`.
+
+**Errors:** `404` user; `409` already following; `400` cannot follow yourself.
+
+---
+
+#### `DELETE /users/:username/follow`
+
+**Response:** `204`.
+
+**Errors:** `404` follow does not exist.
+
+---
+
+#### `GET /users/:username/followers`
+
+**Query:** `page`, `limit` (offset pagination).
+
+**Response:** `200`
+
+```json
+{
+  "items": [ { "id", "username", "avatarUrl" } ],
+  "total": 5,
+  "page": 1,
+  "limit": 10
+}
+```
+
+---
+
+#### `GET /users/:username/following`
+
+Same as followers.
+
+---
+
+#### `GET /users/:username/tweets`
+
+**Query:** `page`, `limit`.
+
+**Response:** `200`
+
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "content": "...",
+      "authorId": "uuid",
+      "author": { "id", "username", "avatarUrl" },
+      "likesCount": 3,
+      "likedByMe": false,
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  ],
+  "total": 10,
+  "page": 1,
+  "limit": 10
+}
+```
+
+---
+
+### Tweets
+
+All routes require JWT.
+
+#### `POST /tweets`
+
+**Body:**
+
+```json
+{
+  "content": "Hello world"
+}
+```
+
+- `content`: 1–280 characters.
+
+**Response:** `201` — tweet with `likesCount: 0`, `likedByMe: false`, embedded `author`.
+
+---
+
+#### `DELETE /tweets/:id`
+
+Author only.
+
+**Response:** `204`.
+
+**Errors:** `404`; `403` not your tweet.
+
+---
+
+#### `POST /tweets/:id/like`
+
+**Response:** `201` — updated tweet with `likesCount` and `likedByMe: true`.
+
+**Errors:** `409` already liked.
+
+---
+
+#### `DELETE /tweets/:id/like`
+
+**Response:** `204`.
+
+**Errors:** `404` like does not exist.
+
+---
+
+### Timeline
+
+#### `GET /timeline`
+
+Authenticated user feed: own tweets + followed users, **newest first**.
+
+**Query:**
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `limit` | int | Items per page (default 20, max 50) |
+| `cursor` | string | Pagination: `ISO8601_createdAt\|tweetId` from the last item of the previous page |
+
+**Response:** `200`
+
+```json
+{
+  "items": [ /* TweetResponse[] */ ],
+  "hasMore": true,
+  "nextCursor": "2025-06-03T12:00:00.000Z|tweet-uuid"
+}
+```
+
+If `hasMore` is `false`, `nextCursor` is `null`.
+
+---
+
+## Data model (summary)
+
+| Entity | Notes |
+|--------|--------|
+| `users` | unique email and username; `passwordHash` not exposed on reads |
+| `tweets` | `content` max 280; FK `authorId` |
+| `follows` | unique follower/following pair |
+| `likes` | unique user/tweet pair |
+| `refresh_tokens` | refresh JWT hash, `revokedAt`, `replacedByTokenId` |
+
+Migrations in `src/migrations/`.
+
+---
+
+## Testing
+
+- **Unit:** `*.service.spec.ts`, `jwt.strategy.spec.ts`. Jest coverage on `**/*.service.ts` and `strategies/**` (global threshold ≥80%).
+- **E2E:** `test/app.e2e-spec.ts` (register → login → profile → refresh → logout), `test/social.e2e-spec.ts` (follow → tweet → timeline → like → search → unfollow).
+
+```bash
+npm run test:cov
+npm run test:e2e
+```
+
+---
+
+## Modules
+
+```
+src/
+├── auth/           # register, login, refresh, logout, JWT strategy
+├── users/          # profiles, search, listing
+├── follows/        # follow graph
+├── tweets/         # tweets and likes
+├── timeline/       # aggregated feed
+├── health/
+├── database/       # data-source, seed
+└── common/         # shared DTOs, password validation
+```
+
+---
+
+## Docker
+
+The `backend` service in `docker-compose.yml` on startup:
+
+1. Waits for Postgres (`pg_isready`)
+2. `npm run migration:run`
+3. `npm run seed` (if `RUN_SEED=true`)
+4. `node dist/main.js`
+
+CORS is configured via `CORS_ORIGIN` (default `http://localhost:5173`).
+
+---
+
+## Known limitations
+
+- **Real-time:** no WebSockets/SSE; client uses timeline refetch/polling.
+- **Search:** by `username` and `email`; no separate display name from username.
+- **Anonymous public profile:** `GET /users/:username` requires JWT.
+- **Tweet images, replies, notifications:** not implemented.
