@@ -143,7 +143,7 @@ export class TweetsService {
     return author;
   }
 
-  private async mapTweetsWithLikes(
+  async mapTweetsWithLikes(
     tweets: Tweet[],
     requesterId: string,
   ): Promise<TweetResponse[]> {
