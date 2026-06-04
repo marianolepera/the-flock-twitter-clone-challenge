@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Like } from './entities/like.entity';
 import { Tweet } from './entities/tweet.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { TweetsService } from './tweets.service';
 
 type MockRepo<T extends object> = Partial<
@@ -37,15 +38,18 @@ describe('TweetsService', () => {
   let tweetRepo: MockRepo<Tweet>;
   let likeRepo: MockRepo<Like>;
   let userRepo: MockRepo<User>;
+  let notificationsService: { create: jest.Mock };
 
   beforeEach(() => {
     tweetRepo = mockRepo<Tweet>();
     likeRepo = mockRepo<Like>();
     userRepo = mockRepo<User>();
+    notificationsService = { create: jest.fn().mockResolvedValue(undefined) };
     service = new TweetsService(
       tweetRepo as unknown as Repository<Tweet>,
       likeRepo as unknown as Repository<Like>,
       userRepo as unknown as Repository<User>,
+      notificationsService as unknown as NotificationsService,
     );
   });
 
@@ -196,6 +200,7 @@ describe('TweetsService', () => {
       likesCount: 1,
       likedByMe: true,
     });
+    expect(notificationsService.create).toHaveBeenCalled();
   });
 
   it('unlike removes like', async () => {

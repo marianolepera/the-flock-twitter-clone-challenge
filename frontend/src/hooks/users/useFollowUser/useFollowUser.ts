@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { followUser } from '@/api/users/users-api'
+import { notificationKeys } from '@/hooks/notifications/query-keys'
 import { timelineKeys } from '@/hooks/timeline/query-keys'
 import { userKeys } from '@/hooks/users/query-keys'
 import { useAuthStore } from '@/stores/auth.store'
@@ -21,6 +22,7 @@ export function useFollowUser() {
       }
 
       queryClient.invalidateQueries({ queryKey: userKeys.followers(username) })
+      queryClient.invalidateQueries({ queryKey: notificationKeys.all })
     },
   })
 }

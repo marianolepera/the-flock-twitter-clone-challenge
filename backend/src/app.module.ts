@@ -5,6 +5,7 @@ import databaseConfig from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { FollowsModule } from './follows/follows.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { TweetsModule } from './tweets/tweets.module';
 import { UsersModule } from './users/users.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     HealthModule,
     FollowsModule,
+    NotificationsModule,
     TweetsModule,
     TimelineModule,
     UsersModule,
