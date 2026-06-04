@@ -46,8 +46,36 @@ Docker build uses the root `.env.example` / compose `VITE_API_URL` build arg.
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
 | `npm run lint` | ESLint |
-| `npm test` | Vitest (watch) |
+| `npm test` | Vitest (watch) — unit & integration tests |
 | `npm run test:run` | Vitest (single run, CI) |
+| `npm run test:e2e` | Playwright E2E (requires API + UI running) |
+| `npm run test:e2e:ui` | Playwright UI mode |
+
+### Testing
+
+**Vitest + React Testing Library** (`src/**/*.test.ts(x)`): auth, tweets, timeline, search, profile, follow, notifications, layouts, atoms, API modules, hooks, and utilities (67 tests).
+
+**Playwright E2E** (`e2e/`): real login, compose tweet, follow from search, notifications. Prerequisites:
+
+```bash
+
+docker compose up -d
+
+
+cd frontend
+npm run test:e2e:install   
+npm run test:e2e
+```
+
+**Browsers:** By default, local E2E uses **Google Chrome** already installed on your Mac (`channel: 'chrome'`). If you do not have Chrome, either install it or run:
+
+```bash
+npm run test:e2e:install
+PLAYWRIGHT_BUNDLE_CHROMIUM=true npm run test:e2e
+```
+
+If you see `Executable doesn't exist`, run `npm run test:e2e:install` (or install [Google Chrome](https://www.google.com/chrome/)).
+```
 
 ## Breakpoints (mobile-first)
 
