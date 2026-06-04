@@ -1,7 +1,7 @@
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
 
 import { apiClient } from '@/api/client'
-import { refreshTokens } from '@/features/auth/api/refresh-tokens'
+import { refreshTokens } from '@/api/auth/refresh-tokens'
 import { useAuthStore } from '@/stores/auth.store'
 
 const PUBLIC_PATH_PREFIXES = ['/auth/login', '/auth/register', '/auth/refresh', '/health']

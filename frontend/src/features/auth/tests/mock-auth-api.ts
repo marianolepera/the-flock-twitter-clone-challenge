@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios'
 import { vi } from 'vitest'
 
-import type { LoginPayload, RegisterPayload } from '@/features/auth/api/auth-api'
+import type { LoginPayload, RegisterPayload } from '@/api/auth/auth-api'
 import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 
 function throwApiError(status: number, message: string): never {
@@ -20,7 +20,7 @@ function throwApiError(status: number, message: string): never {
   )
 }
 
-vi.mock('@/features/auth/api/auth-api', () => ({
+vi.mock('@/api/auth/auth-api', () => ({
   login: vi.fn(async (payload: LoginPayload) => {
     if (
       payload.email === 'alice@example.com' &&
