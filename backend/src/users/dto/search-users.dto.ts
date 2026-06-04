@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 
 export class SearchUsersDto {
   @IsString()
-  @Length(1, 50)
+  @Length(3, 50)
   q: string;
 
   @IsOptional()
