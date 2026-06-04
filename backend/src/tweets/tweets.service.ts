@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { EventsGateway } from '../events/events.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/entities/notification-type';
 import { User } from '../users/entities/user.entity';
@@ -36,6 +37,7 @@ export class TweetsService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly notificationsService: NotificationsService,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async create(authorId: string, dto: CreateTweetDto): Promise<TweetResponse> {
@@ -51,7 +53,10 @@ export class TweetsService {
     });
     const saved = await this.tweetRepository.save(tweet);
 
-    return this.toTweetResponse(saved, author, 0, false);
+    const response = this.toTweetResponse(saved, author, 0, false);
+    void this.eventsGateway.emitTimelineNewTweet(authorId, response);
+
+    return response;
   }
 
   async delete(tweetId: string, requesterId: string): Promise<void> {

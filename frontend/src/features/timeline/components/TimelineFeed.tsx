@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { Button } from '@/components/atoms/Button'
 import { Spinner } from '@/components/atoms/Spinner'
+import { useTimelineUpdates } from '@/context/timeline-updates-context'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
 import { useGetTimeline } from '@/hooks/timeline/useGetTimeline/useGetTimeline'
 import { formatApiError } from '@/lib/format-api-error'
@@ -9,6 +10,7 @@ import { useAuthStore } from '@/stores/auth.store'
 
 export function TimelineFeed() {
   const user = useAuthStore((s) => s.user)
+  const { hasNewTweets, refreshTimeline } = useTimelineUpdates()
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -82,6 +84,18 @@ export function TimelineFeed() {
 
   return (
     <section aria-label="Timeline">
+      {hasNewTweets ? (
+        <div className="sticky top-0 z-10 border-b border-border bg-brand-muted px-4 py-2 text-center">
+          <button
+            type="button"
+            className="cursor-pointer text-sm font-bold text-brand hover:underline"
+            onClick={refreshTimeline}
+          >
+            New tweets — Show them
+          </button>
+        </div>
+      ) : null}
+
       <ul className="list-none">
         {tweets.map((tweet) => (
           <li key={tweet.id}>

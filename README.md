@@ -301,8 +301,8 @@ Docker-only variables (`VITE_API_URL`, `RUN_SEED`) are in `.env.example`.
 
 **Local:** run `npm run seed` in `backend/` after migrations.
 
-- **12 users**, **24 tweets**, **26 follows**, **27 likes**
-- Seed **truncates** users, tweets, follows, likes, and refresh tokens before inserting
+- **12 users**, **24 tweets**, **26 follows**, **27 likes**, plus **notifications** derived from those follows/likes
+- Seed **truncates** users, tweets, follows, likes, notifications, and refresh tokens before inserting
 
 | Field | Value |
 |-------|--------|
@@ -341,6 +341,52 @@ Full reference: **[backend/README.md](./backend/README.md)**.
 
 ---
 
+## Bonus features (challenge)
+
+The challenge asks for **at least two** optional bonuses. This repo implements **three**:
+
+| Bonus | Status | Summary |
+|-------|--------|---------|
+| **Docker Compose** | Done | Full stack: Postgres + API + UI — [Quick start](#quick-start--docker-full-stack-recommended) |
+| **Notifications** | Done | REST inbox + unread badge + mark-all-read on visit |
+| **Real-time (WebSockets)** | Done | [Socket.IO](https://socket.io/) timeline + notification push |
+
+Not implemented (out of scope for now): tweet **images**, **reply threads**.
+
+### Notifications
+
+- **Backend:** `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/read`. Rows are created on **follow** and **like** (not on self-actions).
+- **Frontend:** `/notifications` page, bell badge in the app shell, list with links to actor profile (and tweet context on likes).
+- **Seed:** notifications are generated from existing follows and likes when the DB is seeded.
+
+### Real-time (Socket.IO)
+
+Uses [NestJS WebSockets](https://docs.nestjs.com/websockets/gateways) on the API and [socket.io-client](https://socket.io/docs/v4/client-api/) in the UI. Same origin rules as REST: configure `CORS_ORIGIN` for the browser URL(s).
+
+| Item | Value |
+|------|--------|
+| Namespace | `/events` (full URL: `{API_URL}/events`, e.g. `http://localhost:3000/events`) |
+| Auth | JWT access token in handshake `auth.token` or `Authorization: Bearer …` |
+| `timeline:new-tweet` | Sent to **followers** when someone they follow posts |
+| `notification:new` | Sent to the **recipient** when a follow/like notification is created |
+
+**Frontend behavior**
+
+- **Timeline:** banner “New tweets — Show them” on Home; click refetches the feed (no auto-scroll).
+- **Notifications:** unread count and list invalidate over the socket (no 30s polling).
+
+**Quick manual check (two browsers)**
+
+1. Start the stack: `docker compose up --build -d`.
+2. Browser A: log in as **alice** (`alice@example.com` / `Password123!`).
+3. Browser B (incognito): log in as **bob**, open **Home**, ensure Bob follows Alice (Search → follow if needed).
+4. In browser A, post a tweet → browser B should show the timeline banner without refreshing.
+5. In browser A, follow or like Bob’s content → Bob’s notification badge should update without refresh.
+
+Protocol details and payloads: **[backend/README.md — WebSockets](./backend/README.md#websockets-socketio)**. Client wiring: **[frontend/README.md — Real-time](./frontend/README.md#real-time-socketio)**.
+
+---
+
 ## Stack and technical decisions
 
 ### Why this stack
@@ -371,10 +417,10 @@ Full reference: **[backend/README.md](./backend/README.md)**.
 
 See [backend/README.md](./backend/README.md#known-limitations).
 
-- No WebSockets/SSE for timeline (client polling/refetch).
-- No tweet images, replies, or notifications.
+- No tweet **images** or **reply threads**.
 - User search by **username** and **email** (no separate display name).
 - Profiles and `/users` listings require JWT.
+- Real-time is **push + manual refresh** on the timeline (not live insertion of tweets in the list).
 
 ---
 

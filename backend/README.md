@@ -380,6 +380,62 @@ Marks all unread notifications as read for the current user.
 
 **Response:** `200` — `{ updated: number }`
 
+Created automatically when:
+
+- A user **follows** another user (`recipient` = followed user).
+- A user **likes** a tweet (`recipient` = tweet author).
+
+Self-actions (following yourself, liking your own tweet) do not create notifications.
+
+---
+
+### WebSockets (Socket.IO)
+
+Real-time bonus: [Socket.IO](https://socket.io/) gateway alongside the HTTP API. Reference: [NestJS WebSockets](https://docs.nestjs.com/websockets/gateways).
+
+| Item | Value |
+|------|--------|
+| Path | Namespace `/events` → `ws://localhost:3000/events` (or `wss://` in production) |
+| Handshake auth | `auth: { token: "<accessToken>" }` **or** header `Authorization: Bearer <accessToken>` |
+| CORS | Same `CORS_ORIGIN` as REST (comma-separated origins allowed) |
+
+**Server → client events**
+
+#### `timeline:new-tweet`
+
+Emitted to every user who **follows** the author after `POST /tweets` succeeds.
+
+Payload: `TweetResponse` with ISO date strings:
+
+```json
+{
+  "id": "uuid",
+  "content": "Hello",
+  "authorId": "uuid",
+  "author": { "id": "uuid", "username": "alice", "avatarUrl": "..." },
+  "likesCount": 0,
+  "likedByMe": false,
+  "createdAt": "2025-06-04T12:00:00.000Z",
+  "updatedAt": "2025-06-04T12:00:00.000Z"
+}
+```
+
+`likedByMe` is always `false` in this event (recipient-specific likes are not computed server-side for the push).
+
+#### `notification:new`
+
+Emitted to the **recipient** when a notification row is saved.
+
+Payload: `NotificationResponse` (same shape as `GET /notifications` items).
+
+**Implementation**
+
+- `src/events/events.gateway.ts` — connection registry per `userId`, JWT verification on connect.
+- `TweetsService.create()` → `emitTimelineNewTweet`.
+- `NotificationsService.create()` → `emitNotification`.
+
+There is no client → server event API beyond the Socket.IO handshake.
+
 ---
 
 ### Timeline
@@ -417,6 +473,7 @@ If `hasMore` is `false`, `nextCursor` is `null`.
 | `tweets` | `content` max 280; FK `authorId` |
 | `follows` | unique follower/following pair |
 | `likes` | unique user/tweet pair |
+| `notifications` | `follow` \| `like`; FK `recipientId`, `actorId`, optional `tweetId`; `readAt` nullable |
 | `refresh_tokens` | refresh JWT hash, `revokedAt`, `replacedByTokenId` |
 
 Migrations in `src/migrations/`.
@@ -444,6 +501,8 @@ src/
 ├── follows/        # follow graph
 ├── tweets/         # tweets and likes
 ├── timeline/       # aggregated feed
+├── notifications/  # inbox, unread count, mark read
+├── events/         # Socket.IO gateway (real-time)
 ├── health/
 ├── database/       # data-source, seed
 └── common/         # shared DTOs, password validation
@@ -466,7 +525,7 @@ CORS is configured via `CORS_ORIGIN` (default `http://localhost:5173`).
 
 ## Known limitations
 
-- **Real-time:** no WebSockets/SSE; client uses timeline refetch/polling.
+- **Real-time:** WebSocket push + client-driven timeline refetch; tweets are not inserted live into the feed list.
 - **Search:** by `username` and `email`; no separate display name from username.
 - **Anonymous public profile:** `GET /users/:username` requires JWT.
-- **Tweet images, replies, notifications:** not implemented.
+- **Tweet images and reply threads:** not implemented.

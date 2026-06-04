@@ -5,6 +5,7 @@ import { Button } from '@/components/atoms/Button'
 import { Logo } from '@/components/atoms/Logo'
 import { NotificationNavItem } from '@/components/molecules/NotificationNavItem'
 import { useLogout } from '@/hooks/auth/useLogout/useLogout'
+import { RealtimeProvider } from '@/providers/RealtimeProvider'
 import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
 import { useAuthStore } from '@/stores/auth.store'
@@ -97,7 +98,9 @@ export function AppLayout() {
         </header>
 
         <main className="flex-1 border-r border-border pb-20 lg:max-w-[600px] lg:pb-0">
-          <Outlet />
+          <RealtimeProvider>
+            <Outlet />
+          </RealtimeProvider>
         </main>
       </div>
 
