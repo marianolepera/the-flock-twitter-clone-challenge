@@ -1,11 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, type RenderOptions } from '@testing-library/react'
+import {
+  render,
+  renderHook,
+  type RenderHookOptions,
+  type RenderHookResult,
+  type RenderOptions,
+} from '@testing-library/react'
 import type { ReactElement, ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { paths } from '@/routes/paths'
 
-function createTestQueryClient() {
+export function createTestQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -15,11 +21,8 @@ function createTestQueryClient() {
 }
 
 interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
-  /** Initial URL in MemoryRouter. */
   route?: string
-  /** Path where the component under test is mounted. Defaults to `route`. */
   formPath?: string
-  /** Also register `/home` for post-auth navigation tests. */
   withHomeRoute?: boolean
 }
 
@@ -59,5 +62,35 @@ export function renderWithProviders(
   return {
     queryClient,
     ...render(ui, { wrapper: Wrapper, ...options }),
+  }
+}
+
+interface RenderHookWithProvidersOptions<TProps> extends Omit<
+  RenderHookOptions<TProps>,
+  'wrapper'
+> {
+  route?: string
+}
+
+export function renderHookWithProviders<TResult, TProps>(
+  hook: (props: TProps) => TResult,
+  {
+    route = paths.home,
+    ...options
+  }: RenderHookWithProvidersOptions<TProps> = {},
+): RenderHookResult<TResult, TProps> & { queryClient: QueryClient } {
+  const queryClient = createTestQueryClient()
+
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+      </QueryClientProvider>
+    )
+  }
+
+  return {
+    queryClient,
+    ...renderHook(hook, { wrapper: Wrapper, ...options }),
   }
 }
