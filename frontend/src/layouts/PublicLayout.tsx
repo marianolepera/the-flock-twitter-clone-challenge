@@ -1,8 +1,13 @@
 import { Outlet } from 'react-router-dom'
 
+import { ThemeToggle } from '@/components/molecules/ThemeToggle'
+
 export function PublicLayout() {
   return (
-    <div className="flex min-h-svh flex-col bg-background">
+    <div className="relative flex min-h-svh flex-col bg-background">
+      <div className="absolute right-4 top-4 z-10 sm:right-8">
+        <ThemeToggle />
+      </div>
       <Outlet />
       <footer className="mt-auto border-t border-border px-4 py-6 sm:px-8">
         <nav

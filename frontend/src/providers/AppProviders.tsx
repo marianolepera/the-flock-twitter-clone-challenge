@@ -1,7 +1,9 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
+import { Snackbar } from '@/components/molecules/Snackbar'
 import { queryClient } from '@/lib/query-client'
+import { ThemeProvider } from '@/providers/ThemeProvider'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -9,6 +11,11 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        {children}
+        <Snackbar />
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }

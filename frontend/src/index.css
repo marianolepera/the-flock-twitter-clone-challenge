@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * Breakpoints — mobile-first (challenge spec)
  * sm: tablet  ≥ 640px  (40rem)
@@ -9,10 +11,10 @@
   --breakpoint-sm: 40rem;
   --breakpoint-lg: 64rem;
 
-  /* ── Brand ───────────────────────────────────── */
-  --color-brand:            #7c3aed;  /* violet-600 */
-  --color-brand-hover:      #6d28d9;  /* violet-700 */
-  --color-brand-muted:      #ede9fe;  /* violet-100 */
+  /* ── Brand (Twitter / X blue) ──────────────── */
+  --color-brand:            #1d9bf0;
+  --color-brand-hover:      #1a8cd8;
+  --color-brand-muted:      #e7f6fd;
   --color-brand-foreground: #ffffff;
 
   /* ── Neutral / surface (light defaults) ─────── */
@@ -45,15 +47,14 @@
 }
 
 /*
- * Dark mode — OS preference (Tailwind v4 default, zero JS required).
- * Phase 2 (theme toggle): switch to class-based @custom-variant + Zustand store.
+ * Dark mode — class on <html> (ThemeProvider + theme store).
+ * Default: system via inline script in index.html until React hydrates.
  */
-@media (prefers-color-scheme: dark) {
-  :root {
+html.dark {
     /* brand */
-    --color-brand:            #a78bfa;  /* violet-400 */
-    --color-brand-hover:      #c4b5fd;  /* violet-300 */
-    --color-brand-muted:      #2e1065;  /* violet-950 */
+    --color-brand:            #1d9bf0;
+    --color-brand-hover:      #8cc8f6;
+    --color-brand-muted:      #0a1a2e;
 
     /* surface */
     --color-background:       #000000;
@@ -74,7 +75,6 @@
     --color-danger-muted:     #450a0a;
     --color-success:          #34d399;
     --color-warning:          #fbbf24;
-  }
 }
 
 @layer base {

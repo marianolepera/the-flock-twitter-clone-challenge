@@ -4,15 +4,16 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { likeTweet } from '@/api/tweets/tweets-api'
+import { deleteTweet, likeTweet } from '@/api/tweets/tweets-api'
 import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 import { mockTweet } from '@/features/tweets/tests/fixtures'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
-import { renderWithProviders } from '@/test/test-utils'
+import { renderWithProviders, resetSnackbarStore } from '@/test/test-utils'
 import { useAuthStore } from '@/stores/auth.store'
 
 describe('TweetCard', () => {
   beforeEach(() => {
+    resetSnackbarStore()
     useAuthStore.getState().setSession(mockAuthResponse)
     vi.mocked(likeTweet).mockReset()
     vi.mocked(likeTweet).mockResolvedValue({
@@ -45,6 +46,21 @@ describe('TweetCard', () => {
 
     await waitFor(() => {
       expect(likeTweet).toHaveBeenCalledWith(mockTweet.id, expect.any(Object))
+    })
+  })
+
+  it('shows snackbar after deleting own tweet', async () => {
+    const user = userEvent.setup()
+
+    renderWithProviders(
+      <TweetCard tweet={mockTweet} currentUserId={mockAuthResponse.user.id} />,
+    )
+
+    await user.click(screen.getByRole('button', { name: /delete tweet/i }))
+
+    await waitFor(() => {
+      expect(deleteTweet).toHaveBeenCalledWith(mockTweet.id, expect.any(Object))
+      expect(screen.getByRole('status')).toHaveTextContent('Tweet deleted')
     })
   })
 

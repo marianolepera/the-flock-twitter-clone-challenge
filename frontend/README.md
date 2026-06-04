@@ -109,4 +109,4 @@ If you see `Executable doesn't exist`, run `npm run test:e2e:install` (or instal
 
 ## Theme
 
-Semantic colors and `.dark` mode are defined in `src/index.css`.
+Semantic colors and light/dark themes are in `src/index.css`. Use the sun/moon toggle (sidebar, mobile header, or landing top-right); preference persists in `localStorage` (`the-flock-theme`). Default follows the OS until you toggle.

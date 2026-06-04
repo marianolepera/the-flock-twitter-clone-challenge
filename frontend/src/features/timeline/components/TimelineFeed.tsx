@@ -85,10 +85,10 @@ export function TimelineFeed() {
   return (
     <section aria-label="Timeline">
       {hasNewTweets ? (
-        <div className="sticky top-0 z-10 border-b border-border bg-brand-muted px-4 py-2 text-center">
+        <div className="sticky top-0 z-10 border-b border-border bg-surface px-4 py-2 text-center">
           <button
             type="button"
-            className="cursor-pointer text-sm font-bold text-brand hover:underline"
+            className="cursor-pointer text-sm font-bold text-foreground hover:underline"
             onClick={refreshTimeline}
           >
             New tweets — Show them
