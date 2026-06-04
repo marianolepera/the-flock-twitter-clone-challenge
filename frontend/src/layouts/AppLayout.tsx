@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import { Button } from '@/components/atoms/Button'
 import { Logo } from '@/components/atoms/Logo'
-import { useLogout } from '@/features/auth/hooks/use-auth-mutations'
+import { useLogout } from '@/hooks/auth/useLogout/useLogout'
 import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
 import { useAuthStore } from '@/stores/auth.store'

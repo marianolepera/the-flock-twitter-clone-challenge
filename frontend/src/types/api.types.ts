@@ -10,6 +10,40 @@ export interface User {
   updatedAt: string
 }
 
+export interface TweetAuthor {
+  id: string
+  username: string
+  avatarUrl: string
+}
+
+export interface Tweet {
+  id: string
+  content: string
+  authorId: string
+  author: TweetAuthor
+  likesCount: number
+  likedByMe: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface TimelineFeedResponse {
+  items: Tweet[]
+  hasMore: boolean
+  nextCursor: string | null
+}
+
+export interface FollowResponse {
+  following: boolean
+}
+
 export interface AuthTokens {
   accessToken: string
   refreshToken: string
