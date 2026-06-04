@@ -1,18 +1,13 @@
-import { useEffect, useRef } from 'react'
-
 import { NotificationsFeed } from '@/features/notifications/components/NotificationsFeed'
 import { Button } from '@/components/atoms/Button'
+import { useGetUnreadCount } from '@/hooks/notifications/useGetUnreadCount/useGetUnreadCount'
 import { useMarkAllRead } from '@/hooks/notifications/useMarkAllRead/useMarkAllRead'
 
 export function NotificationsPage() {
+  const { data: unreadData } = useGetUnreadCount()
   const { mutate: markAllRead, isPending } = useMarkAllRead()
-  const didMarkOnMount = useRef(false)
-
-  useEffect(() => {
-    if (didMarkOnMount.current) return
-    didMarkOnMount.current = true
-    markAllRead()
-  }, [markAllRead])
+  const unreadCount = unreadData?.count ?? 0
+  const canMarkAllRead = unreadCount > 0
 
   return (
     <>
@@ -22,8 +17,8 @@ export function NotificationsPage() {
           type="button"
           variant="ghost"
           size="sm"
-          className="text-brand hover:text-brand-hover"
-          disabled={isPending}
+          className="font-normal text-foreground hover:underline disabled:opacity-40"
+          disabled={!canMarkAllRead || isPending}
           onClick={() => markAllRead()}
         >
           Mark all as read

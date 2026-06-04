@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/atoms/Button'
 import { Logo } from '@/components/atoms/Logo'
+import { XHoverLogo } from '@/components/atoms/XHoverLogo'
 import { paths } from '@/routes/paths'
 
 export function LandingPage() {
@@ -17,8 +18,6 @@ export function LandingPage() {
         </h1>
 
         <div className="max-w-sm space-y-4">
-          <p className="text-lg font-bold">Join The Flock today.</p>
-
           <Button variant="secondary" size="lg" fullWidth pill asChild>
             <Link to={paths.register}>Create account</Link>
           </Button>
@@ -44,7 +43,9 @@ export function LandingPage() {
         className="relative hidden items-center justify-center overflow-hidden lg:flex"
         aria-hidden
       >
-        <Logo size="hero" linkTo={null} />
+        <div className="w-[min(40vw,22rem)] h-[min(40vw,22rem)] text-foreground">
+          <XHoverLogo />
+        </div>
       </section>
     </div>
   )

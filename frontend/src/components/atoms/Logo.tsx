@@ -1,8 +1,8 @@
-import { Bird } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
+import { XIcon } from './XIcon'
 
 export interface LogoProps {
   size?: 'sm' | 'lg' | 'hero'
@@ -31,9 +31,8 @@ export function Logo({
         className,
       )}
     >
-      <Bird
-        className={cn(iconSizes[size], 'text-brand', size === 'hero' && 'opacity-20')}
-        strokeWidth={size === 'hero' ? 1 : 2}
+      <XIcon
+        className={cn(iconSizes[size], 'text-foreground', size === 'hero' && 'opacity-20')}
         aria-hidden
       />
       {showWordmark ? (

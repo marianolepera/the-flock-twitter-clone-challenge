@@ -348,7 +348,7 @@ The challenge asks for **at least two** optional bonuses. This repo implements *
 | Bonus | Status | Summary |
 |-------|--------|---------|
 | **Docker Compose** | Done | Full stack: Postgres + API + UI — [Quick start](#quick-start--docker-full-stack-recommended) |
-| **Notifications** | Done | REST inbox + unread badge + mark-all-read on visit |
+| **Notifications** | Done | REST inbox + unread badge + mark-all-read button |
 | **Real-time (WebSockets)** | Done | [Socket.IO](https://socket.io/) timeline + notification push |
 
 Not implemented (out of scope for now): tweet **images**, **reply threads**.

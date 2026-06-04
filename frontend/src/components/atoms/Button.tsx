@@ -54,7 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const classes = cn(
-      'inline-flex items-center justify-center gap-2 font-bold transition-opacity',
+      'inline-flex cursor-pointer items-center justify-center gap-2 font-bold transition-opacity',
       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
       'disabled:cursor-not-allowed disabled:opacity-50',
       pill ? 'rounded-full' : 'rounded-lg',

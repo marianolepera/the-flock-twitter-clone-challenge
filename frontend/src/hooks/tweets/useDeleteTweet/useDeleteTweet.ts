@@ -8,6 +8,7 @@ import {
   restoreTweetCaches,
   snapshotTweetCaches,
 } from '@/hooks/tweets/update-tweet-cache'
+import { useSnackbarStore } from '@/stores/snackbar.store'
 
 export function useDeleteTweet() {
   const queryClient = useQueryClient()
@@ -22,6 +23,9 @@ export function useDeleteTweet() {
       removeTweetFromCaches(queryClient, tweetId)
 
       return { snapshot, tweetId }
+    },
+    onSuccess: () => {
+      useSnackbarStore.getState().show('Tweet deleted')
     },
     onError: (_error, _tweetId, context) => {
       if (context?.snapshot) {

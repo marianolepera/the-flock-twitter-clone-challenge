@@ -9,7 +9,10 @@ import {
 import type { ReactElement, ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
+import { Snackbar } from '@/components/molecules/Snackbar'
 import { paths } from '@/routes/paths'
+import { useSnackbarStore } from '@/stores/snackbar.store'
+import { useThemeStore } from '@/stores/theme.store'
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -18,6 +21,16 @@ export function createTestQueryClient() {
       mutations: { retry: false },
     },
   })
+}
+
+export function resetSnackbarStore() {
+  useSnackbarStore.getState().hide()
+}
+
+export function resetThemeStore() {
+  useThemeStore.setState({ preference: 'light' })
+  document.documentElement.classList.remove('dark')
+  document.documentElement.style.colorScheme = 'light'
 }
 
 interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -39,12 +52,19 @@ export function renderWithProviders(
   const resolvedFormPath = formPath ?? route
 
   function Wrapper({ children }: { children: ReactNode }) {
+    const shell = (
+      <>
+        {children}
+        <Snackbar />
+      </>
+    )
+
     if (withHomeRoute) {
       return (
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={[route]}>
             <Routes>
-              <Route path={resolvedFormPath} element={children} />
+              <Route path={resolvedFormPath} element={shell} />
               <Route path={paths.home} element={<h1>Home feed</h1>} />
             </Routes>
           </MemoryRouter>
@@ -54,7 +74,7 @@ export function renderWithProviders(
 
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        <MemoryRouter initialEntries={[route]}>{shell}</MemoryRouter>
       </QueryClientProvider>
     )
   }

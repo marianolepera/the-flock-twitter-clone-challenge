@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { Button } from '@/components/atoms/Button'
 import { Logo } from '@/components/atoms/Logo'
 import { NotificationNavItem } from '@/components/molecules/NotificationNavItem'
+import { ThemeToggle } from '@/components/molecules/ThemeToggle'
 import { useLogout } from '@/hooks/auth/useLogout/useLogout'
 import { RealtimeProvider } from '@/providers/RealtimeProvider'
 import { cn } from '@/lib/cn'
@@ -76,13 +77,14 @@ export function AppLayout() {
           <NotificationNavItem />
         </nav>
         <div className="mt-auto space-y-3 px-3 py-4">
+          <ThemeToggle showLabel className="w-full" />
           {user ? (
             <p className="truncate text-sm text-muted">@{user.username}</p>
           ) : null}
           <Button
             variant="ghost"
             fullWidth
-            className="justify-start gap-3 px-3"
+            className="cursor-pointer justify-start gap-3 px-3 disabled:cursor-not-allowed"
             disabled={logoutMutation.isPending}
             onClick={() => logoutMutation.mutate()}
           >
@@ -93,8 +95,9 @@ export function AppLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md lg:hidden">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md lg:hidden">
           <Logo />
+          <ThemeToggle />
         </header>
 
         <main className="flex-1 border-r border-border pb-20 lg:max-w-[600px] lg:pb-0">
