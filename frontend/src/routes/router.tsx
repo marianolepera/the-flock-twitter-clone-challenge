@@ -8,9 +8,10 @@ import { HomePage } from '@/pages/HomePage'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
-import { ProfilePage } from '@/pages/ProfilePage'
+import { ProfileRedirectPage } from '@/pages/ProfileRedirectPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { SearchPage } from '@/pages/SearchPage'
+import { UserProfilePage } from '@/pages/UserProfilePage'
 import { paths } from '@/routes/paths'
 
 export const router = createBrowserRouter([
@@ -35,7 +36,8 @@ export const router = createBrowserRouter([
         children: [
           { path: paths.home, element: <HomePage /> },
           { path: paths.search, element: <SearchPage /> },
-          { path: paths.profileMe, element: <ProfilePage /> },
+          { path: paths.profileMe, element: <ProfileRedirectPage /> },
+          { path: '/:username', element: <UserProfilePage /> },
         ],
       },
     ],

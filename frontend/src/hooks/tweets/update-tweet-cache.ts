@@ -8,6 +8,32 @@ import type {
   Tweet,
 } from '@/types/api.types'
 
+export type TweetCacheSnapshot = Array<
+  [readonly unknown[], InfiniteData<TimelineFeedResponse> | PaginatedResponse<Tweet> | undefined]
+>
+
+export function snapshotTweetCaches(
+  queryClient: QueryClient,
+): TweetCacheSnapshot {
+  return [
+    ...queryClient.getQueriesData<InfiniteData<TimelineFeedResponse>>({
+      queryKey: timelineKeys.all,
+    }),
+    ...queryClient.getQueriesData<PaginatedResponse<Tweet>>({
+      queryKey: tweetKeys.all,
+    }),
+  ]
+}
+
+export function restoreTweetCaches(
+  queryClient: QueryClient,
+  snapshot: TweetCacheSnapshot,
+) {
+  for (const [key, data] of snapshot) {
+    queryClient.setQueryData(key, data)
+  }
+}
+
 export function updateTweetInCaches(
   queryClient: QueryClient,
   tweetId: string,

@@ -1,16 +1,15 @@
-import { useAuthStore } from '@/stores/auth.store'
+import { ComposeTweet } from '@/features/tweets/components/ComposeTweet'
+import { TimelineFeed } from '@/features/timeline/components/TimelineFeed'
 
 export function HomePage() {
-  const user = useAuthStore((s) => s.user)
-
   return (
-    <div className="border-b border-border px-4 py-6">
-      <h1 className="text-xl font-bold">Home</h1>
-      {user ? (
-        <p className="mt-2 text-muted">
-          Signed in as <span className="text-foreground">@{user.username}</span>
-        </p>
-      ) : null}
-    </div>
+    <>
+      <header className="sticky top-[57px] z-10 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md lg:top-0">
+        <h1 className="text-xl font-bold">Home</h1>
+      </header>
+
+      <ComposeTweet />
+      <TimelineFeed />
+    </>
   )
 }

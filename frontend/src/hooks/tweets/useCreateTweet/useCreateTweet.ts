@@ -7,7 +7,6 @@ export function useCreateTweet() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['create-tweet'],
     mutationFn: createTweet,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: timelineKeys.all })
