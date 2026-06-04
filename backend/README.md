@@ -205,7 +205,7 @@ Controller uses `@UseGuards(JwtAuthGuard)` on all routes.
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
-| `q` | string | yes | Search `username` and `email` (ILIKE) |
+| `q` | string | yes | Search `username` and `email` (ILIKE); min 3 characters |
 | `limit` | int | no | Max results (service default: 10, max 50) |
 
 **Response:** `200` — array of public profiles.

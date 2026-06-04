@@ -1,4 +1,5 @@
 import { Avatar } from '@/components/atoms/Avatar'
+import { EditProfileBio } from '@/features/users/components/EditProfileBio'
 import { FollowButton } from '@/features/users/components/FollowButton'
 import { useGetFollowersCount } from '@/hooks/users/useGetFollowersCount/useGetFollowersCount'
 import { useGetFollowingCount } from '@/hooks/users/useGetFollowingCount/useGetFollowingCount'
@@ -68,7 +69,9 @@ export function ProfileHeader({
             <h1 className="truncate text-xl font-bold text-foreground">
               @{user.username}
             </h1>
-            {user.bio ? (
+            {isSelf ? (
+              <EditProfileBio user={user} />
+            ) : user.bio ? (
               <p className="mt-2 text-sm text-foreground">{user.bio}</p>
             ) : (
               <p className="mt-2 text-sm text-subtle">No bio yet.</p>
