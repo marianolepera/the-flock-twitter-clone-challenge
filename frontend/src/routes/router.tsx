@@ -5,6 +5,7 @@ import { PublicLayout } from '@/layouts/PublicLayout'
 import { RequireAuth } from '@/layouts/RequireAuth'
 import { RequireGuest } from '@/layouts/RequireGuest'
 import { HomePage } from '@/pages/HomePage'
+import { NotificationsPage } from '@/pages/NotificationsPage'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: paths.home, element: <HomePage /> },
+          { path: paths.notifications, element: <NotificationsPage /> },
           { path: paths.search, element: <SearchPage /> },
           { path: paths.profileMe, element: <ProfileRedirectPage /> },
           { path: '/:username', element: <UserProfilePage /> },

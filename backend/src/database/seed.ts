@@ -9,6 +9,8 @@ import {
   SEED_USERS,
 } from './seed-data';
 import { Follow } from '../follows/entities/follow.entity';
+import { Notification } from '../notifications/entities/notification.entity';
+import { NotificationType } from '../notifications/entities/notification-type';
 import { Like } from '../tweets/entities/like.entity';
 import { Tweet } from '../tweets/entities/tweet.entity';
 import { User } from '../users/entities/user.entity';
@@ -25,13 +27,14 @@ async function seed() {
 
   console.log('Clearing existing data...');
   await dataSource.query(
-    'TRUNCATE TABLE "refresh_tokens", "likes", "follows", "tweets", "users" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "refresh_tokens", "notifications", "likes", "follows", "tweets", "users" RESTART IDENTITY CASCADE',
   );
 
   const userRepo = dataSource.getRepository(User);
   const tweetRepo = dataSource.getRepository(Tweet);
   const followRepo = dataSource.getRepository(Follow);
   const likeRepo = dataSource.getRepository(Like);
+  const notificationRepo = dataSource.getRepository(Notification);
 
   const passwordHash = await bcrypt.hash(SEED_PASSWORD, BCRYPT_ROUNDS);
   const usersByUsername = new Map<string, User>();
@@ -101,6 +104,42 @@ async function seed() {
     await likeRepo.save(like);
   }
 
+  let notificationCount = 0;
+
+  console.log('Creating notifications from follows and likes...');
+  for (const [followerName, followingName] of SEED_FOLLOWS) {
+    const follower = usersByUsername.get(followerName);
+    const following = usersByUsername.get(followingName);
+    if (!follower || !following || follower.id === following.id) continue;
+
+    await notificationRepo.save(
+      notificationRepo.create({
+        recipientId: following.id,
+        actorId: follower.id,
+        type: NotificationType.FOLLOW,
+        tweetId: null,
+      }),
+    );
+    notificationCount += 1;
+  }
+
+  for (const [likerName, authorName, tweetIndex] of SEED_LIKES) {
+    const liker = usersByUsername.get(likerName);
+    const author = usersByUsername.get(authorName);
+    const tweet = tweetsByAuthor.get(authorName)?.[tweetIndex];
+    if (!liker || !author || !tweet || liker.id === author.id) continue;
+
+    await notificationRepo.save(
+      notificationRepo.create({
+        recipientId: author.id,
+        actorId: liker.id,
+        type: NotificationType.LIKE,
+        tweetId: tweet.id,
+      }),
+    );
+    notificationCount += 1;
+  }
+
   const tweetCount = [...tweetsByAuthor.values()].reduce(
     (sum, list) => sum + list.length,
     0,
@@ -111,6 +150,7 @@ async function seed() {
   console.log(`  Tweets:  ${tweetCount}`);
   console.log(`  Follows: ${SEED_FOLLOWS.length}`);
   console.log(`  Likes:   ${SEED_LIKES.length}`);
+  console.log(`  Notifications: ${notificationCount}`);
   console.log('\nTest credentials (all seed users share the same password):');
   console.log(`  Email:    alice@example.com`);
   console.log(`  Username: alice`);

@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/entities/notification-type';
 import { User } from '../users/entities/user.entity';
 import { CreateTweetDto } from './dto/create-tweet.dto';
 import { Like } from './entities/like.entity';
@@ -33,6 +35,7 @@ export class TweetsService {
     private readonly likeRepository: Repository<Like>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(authorId: string, dto: CreateTweetDto): Promise<TweetResponse> {
@@ -104,6 +107,13 @@ export class TweetsService {
 
     const like = this.likeRepository.create({ userId, tweetId });
     await this.likeRepository.save(like);
+
+    await this.notificationsService.create({
+      recipientId: tweet.authorId,
+      actorId: userId,
+      type: NotificationType.LIKE,
+      tweetId,
+    });
 
     const likesCount = await this.likeRepository.count({ where: { tweetId } });
     const author = await this.getAuthorSummary(tweet.authorId);

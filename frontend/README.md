@@ -22,7 +22,7 @@ Folder layout: **[src/STRUCTURE.md](./src/STRUCTURE.md)**.
 |------|------|
 | `/` | Public landing |
 | `/login`, `/register` | Sign in / sign up |
-| `/home`, `/search`, `/profile` | App shell (protected) |
+| `/home`, `/notifications`, `/search`, `/profile` | App shell (protected) |
 
 ## Environment
 

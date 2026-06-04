@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import { Button } from '@/components/atoms/Button'
 import { Logo } from '@/components/atoms/Logo'
+import { NotificationNavItem } from '@/components/molecules/NotificationNavItem'
 import { useLogout } from '@/hooks/auth/useLogout/useLogout'
 import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
@@ -71,6 +72,7 @@ export function AppLayout() {
           {navItems.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
+          <NotificationNavItem />
         </nav>
         <div className="mt-auto space-y-3 px-3 py-4">
           {user ? (
@@ -112,6 +114,10 @@ export function AppLayout() {
             className="flex-col gap-0.5 rounded-xl px-4 py-2 text-xs"
           />
         ))}
+        <NotificationNavItem
+          compact
+          className="flex-col gap-0.5 rounded-xl px-4 py-2 text-xs"
+        />
       </nav>
     </div>
   )

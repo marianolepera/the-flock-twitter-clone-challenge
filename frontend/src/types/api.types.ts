@@ -44,6 +44,36 @@ export interface FollowResponse {
   following: boolean
 }
 
+export type NotificationType = 'follow' | 'like'
+
+export interface NotificationActor {
+  id: string
+  username: string
+  avatarUrl: string
+}
+
+export interface NotificationTweetSnippet {
+  id: string
+  content: string
+}
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  actor: NotificationActor
+  tweet: NotificationTweetSnippet | null
+  readAt: string | null
+  createdAt: string
+}
+
+export interface UnreadCountResponse {
+  count: number
+}
+
+export interface MarkAllReadResponse {
+  updated: number
+}
+
 export interface AuthTokens {
   accessToken: string
   refreshToken: string

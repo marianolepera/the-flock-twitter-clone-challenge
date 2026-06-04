@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 
 import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { Follow } from '../follows/entities/follow.entity';
+import { Notification } from '../notifications/entities/notification.entity';
 import { Like } from '../tweets/entities/like.entity';
 import { Tweet } from '../tweets/entities/tweet.entity';
 import { User } from '../users/entities/user.entity';
@@ -14,8 +15,7 @@ export default new DataSource({
   username: process.env.DATABASE_USER ?? 'postgres',
   password: process.env.DATABASE_PASSWORD ?? 'postgres',
   database: process.env.DATABASE_NAME ?? 'twitter_clone',
-  entities: [User, Tweet, Follow, Like, RefreshToken],
+  entities: [User, Tweet, Follow, Like, RefreshToken, Notification],
   migrations: ['src/migrations/*.{ts,js}'],
   migrationsTableName: 'migrations',
 });
-

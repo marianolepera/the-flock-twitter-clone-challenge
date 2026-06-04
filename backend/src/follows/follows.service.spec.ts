@@ -6,6 +6,7 @@ import {
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Follow } from './entities/follow.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { FollowsService } from './follows.service';
 
 type MockRepo<T extends object> = Partial<
@@ -26,13 +27,16 @@ describe('FollowsService', () => {
   let service: FollowsService;
   let followRepo: MockRepo<Follow>;
   let userRepo: MockRepo<User>;
+  let notificationsService: { create: jest.Mock };
 
   beforeEach(() => {
     followRepo = mockRepo<Follow>();
     userRepo = mockRepo<User>();
+    notificationsService = { create: jest.fn().mockResolvedValue(undefined) };
     service = new FollowsService(
       followRepo as unknown as Repository<Follow>,
       userRepo as unknown as Repository<User>,
+      notificationsService as unknown as NotificationsService,
     );
   });
 
@@ -75,6 +79,7 @@ describe('FollowsService', () => {
       followerId: 'u1',
       followingId: 'u2',
     });
+    expect(notificationsService.create).toHaveBeenCalled();
   });
 
   it('unfollow throws NotFoundException when not following', async () => {

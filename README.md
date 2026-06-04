@@ -335,6 +335,7 @@ Base: `http://localhost:3000`. Public routes: `GET /health`, `POST /auth/*`. Eve
 | Users | `GET /users`, `search`, `:username`, followers, following, tweets; `PATCH :username` |
 | Tweets | `POST /tweets`, `DELETE /tweets/:id`, like/unlike |
 | Timeline | `GET /timeline?limit=&cursor=` |
+| Notifications | `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/read` |
 
 Full reference: **[backend/README.md](./backend/README.md)**.
 

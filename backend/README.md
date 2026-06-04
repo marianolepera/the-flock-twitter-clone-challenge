@@ -358,6 +358,30 @@ Author only.
 
 ---
 
+### Notifications
+
+#### `GET /notifications`
+
+Authenticated user inbox, newest first (paginated).
+
+**Query:** `page`, `limit` (same as other list endpoints).
+
+**Response:** `200` — `{ items: NotificationResponse[], total, page, limit }`
+
+Each item includes `type` (`follow` | `like`), `actor`, optional `tweet` snippet, `readAt`, `createdAt`.
+
+#### `GET /notifications/unread-count`
+
+**Response:** `200` — `{ count: number }`
+
+#### `PATCH /notifications/read`
+
+Marks all unread notifications as read for the current user.
+
+**Response:** `200` — `{ updated: number }`
+
+---
+
 ### Timeline
 
 #### `GET /timeline`
