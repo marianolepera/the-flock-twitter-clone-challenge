@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Like } from './entities/like.entity';
 import { Tweet } from './entities/tweet.entity';
+import { EventsGateway } from '../events/events.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TweetsService } from './tweets.service';
 
@@ -39,17 +40,22 @@ describe('TweetsService', () => {
   let likeRepo: MockRepo<Like>;
   let userRepo: MockRepo<User>;
   let notificationsService: { create: jest.Mock };
+  let eventsGateway: { emitTimelineNewTweet: jest.Mock };
 
   beforeEach(() => {
     tweetRepo = mockRepo<Tweet>();
     likeRepo = mockRepo<Like>();
     userRepo = mockRepo<User>();
     notificationsService = { create: jest.fn().mockResolvedValue(undefined) };
+    eventsGateway = {
+      emitTimelineNewTweet: jest.fn().mockResolvedValue(undefined),
+    };
     service = new TweetsService(
       tweetRepo as unknown as Repository<Tweet>,
       likeRepo as unknown as Repository<Like>,
       userRepo as unknown as Repository<User>,
       notificationsService as unknown as NotificationsService,
+      eventsGateway as unknown as EventsGateway,
     );
   });
 
@@ -75,6 +81,11 @@ describe('TweetsService', () => {
       likedByMe: false,
       author: authorSummary,
     });
+
+    expect(eventsGateway.emitTimelineNewTweet).toHaveBeenCalledWith(
+      'u1',
+      expect.objectContaining({ id: 't1', authorId: 'u1' }),
+    );
   });
 
   it('delete throws ForbiddenException when requester is not the author', async () => {

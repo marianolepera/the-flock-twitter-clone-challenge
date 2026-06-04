@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventsGateway } from '../events/events.gateway';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -27,6 +28,7 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async create(params: {
@@ -45,7 +47,19 @@ export class NotificationsService {
         params.type === NotificationType.LIKE ? (params.tweetId ?? null) : null,
     });
 
-    await this.notificationRepository.save(notification);
+    const saved = await this.notificationRepository.save(notification);
+
+    const full = await this.notificationRepository.findOne({
+      where: { id: saved.id },
+      relations: ['actor', 'tweet'],
+    });
+
+    if (full) {
+      this.eventsGateway.emitNotification(
+        params.recipientId,
+        this.toResponse(full),
+      );
+    }
   }
 
   async findAll(recipientId: string, page = 1, limit = 20) {

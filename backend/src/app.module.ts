@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import databaseConfig from './config/database.config';
 import { AuthModule } from './auth/auth.module';
+import { EventsModule } from './events/events.module';
 import { HealthModule } from './health/health.module';
 import { FollowsModule } from './follows/follows.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
         configService.get<TypeOrmModuleOptions>('database')!,
     }),
     AuthModule,
+    EventsModule,
     HealthModule,
     FollowsModule,
     NotificationsModule,

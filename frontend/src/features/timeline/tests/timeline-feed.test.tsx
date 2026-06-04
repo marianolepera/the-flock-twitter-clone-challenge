@@ -4,7 +4,14 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/lib/socket', () => ({
+  connectSocket: vi.fn(),
+  disconnectSocket: vi.fn(),
+  getSocket: vi.fn(() => null),
+}))
+
 import { getTimeline } from '@/api/timeline/timeline-api'
+import { TimelineUpdatesProvider } from '@/context/timeline-updates-context'
 import { TimelineFeed } from '@/features/timeline/components/TimelineFeed'
 import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 import { mockTweet } from '@/features/tweets/tests/fixtures'
@@ -15,7 +22,11 @@ describe('TimelineFeed', () => {
   it('renders tweets from the timeline API', async () => {
     useAuthStore.getState().setSession(mockAuthResponse)
 
-    renderWithProviders(<TimelineFeed />)
+    renderWithProviders(
+      <TimelineUpdatesProvider>
+        <TimelineFeed />
+      </TimelineUpdatesProvider>,
+    )
 
     expect(await screen.findByText(mockTweet.content)).toBeInTheDocument()
     expect(getTimeline).toHaveBeenCalled()
@@ -29,7 +40,11 @@ describe('TimelineFeed', () => {
       nextCursor: null,
     })
 
-    renderWithProviders(<TimelineFeed />)
+    renderWithProviders(
+      <TimelineUpdatesProvider>
+        <TimelineFeed />
+      </TimelineUpdatesProvider>,
+    )
 
     expect(
       await screen.findByText(/your timeline is empty/i),
@@ -42,7 +57,11 @@ describe('TimelineFeed', () => {
 
     const user = userEvent.setup()
 
-    renderWithProviders(<TimelineFeed />)
+    renderWithProviders(
+      <TimelineUpdatesProvider>
+        <TimelineFeed />
+      </TimelineUpdatesProvider>,
+    )
 
     expect(
       await screen.findByRole('alert'),

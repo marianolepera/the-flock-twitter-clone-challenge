@@ -11,6 +11,7 @@ Twitter clone UI. Monorepo setup: **[root README](../README.md)**.
 | [TanStack Query](https://tanstack.com/query/latest) | Server state |
 | [Zustand](https://zustand.docs.pmnd.rs/) | Client state (auth, theme) |
 | [Axios](https://axios-http.com/) | HTTP client |
+| [Socket.IO client](https://socket.io/docs/v4/client-api/) | Real-time (timeline + notifications) |
 | [React Router](https://reactrouter.com/) | Routing |
 | [Lucide React](https://lucide.dev/) | Icons |
 
@@ -37,6 +38,30 @@ VITE_API_URL=http://localhost:3000
 ```
 
 Docker build uses the root `.env.example` / compose `VITE_API_URL` build arg.
+
+The WebSocket client connects to `{VITE_API_URL}/events` (same host as the API).
+
+## Real-time (Socket.IO)
+
+Bonus: live updates without polling the unread-count endpoint.
+
+| Event | UI behavior |
+|-------|-------------|
+| `timeline:new-tweet` | Sticky banner on Home: **“New tweets — Show them”** → invalidates timeline query |
+| `notification:new` | Invalidates unread count + notifications list (bell badge updates) |
+
+**Code layout**
+
+| Path | Role |
+|------|------|
+| `src/lib/socket.ts` | Singleton connect/disconnect with access token |
+| `src/lib/realtime-events.ts` | Event name constants |
+| `src/context/timeline-updates-context.tsx` | Socket + timeline banner state |
+| `src/providers/RealtimeProvider.tsx` | Wraps authenticated app routes (`AppLayout`) |
+
+Connection runs only while the user is logged in; `disconnectSocket()` runs on logout / token clear.
+
+See also: [root README — Bonus features](../README.md#bonus-features-challenge) and [backend WebSockets](../backend/README.md#websockets-socketio).
 
 ## Scripts
 
@@ -75,7 +100,6 @@ PLAYWRIGHT_BUNDLE_CHROMIUM=true npm run test:e2e
 ```
 
 If you see `Executable doesn't exist`, run `npm run test:e2e:install` (or install [Google Chrome](https://www.google.com/chrome/)).
-```
 
 ## Breakpoints (mobile-first)
 
