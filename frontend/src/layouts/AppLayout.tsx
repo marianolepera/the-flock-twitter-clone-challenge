@@ -8,11 +8,20 @@ import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
 import { useAuthStore } from '@/stores/auth.store'
 
-const navItems = [
-  { to: paths.home, label: 'Home', icon: Home, end: true },
-  { to: paths.search, label: 'Search', icon: Search, end: true },
-  { to: paths.profileMe, label: 'Profile', icon: User, end: true },
-] as const
+function useNavItems() {
+  const user = useAuthStore((s) => s.user)
+
+  return [
+    { to: paths.home, label: 'Home', icon: Home, end: true },
+    { to: paths.search, label: 'Search', icon: Search, end: true },
+    {
+      to: user ? paths.profile(user.username) : paths.profileMe,
+      label: 'Profile',
+      icon: User,
+      end: true,
+    },
+  ] as const
+}
 
 function NavItem({
   to,
@@ -50,6 +59,7 @@ function NavItem({
 export function AppLayout() {
   const user = useAuthStore((s) => s.user)
   const logoutMutation = useLogout()
+  const navItems = useNavItems()
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-[1280px]">

@@ -22,10 +22,15 @@ export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
   const deleteMutation = useDeleteTweet()
 
   const isOwn = currentUserId === tweet.authorId
-  const isLikePending = likeMutation.isPending || unlikeMutation.isPending
-  const isDeletePending = deleteMutation.isPending
+  const isLikePendingForTweet =
+    (likeMutation.isPending && likeMutation.variables === tweet.id) ||
+    (unlikeMutation.isPending && unlikeMutation.variables === tweet.id)
+  const isDeletePendingForTweet =
+    deleteMutation.isPending && deleteMutation.variables === tweet.id
 
   function handleLikeToggle() {
+    if (isLikePendingForTweet) return
+
     if (tweet.likedByMe) {
       unlikeMutation.mutate(tweet.id)
       return
@@ -35,6 +40,8 @@ export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
   }
 
   function handleDelete() {
+    if (isDeletePendingForTweet) return
+
     deleteMutation.mutate(tweet.id)
   }
 
@@ -80,25 +87,25 @@ export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
             <button
               type="button"
               onClick={handleLikeToggle}
-              disabled={isLikePending || isDeletePending}
               aria-pressed={tweet.likedByMe}
+              aria-busy={isLikePendingForTweet}
               aria-label={
                 tweet.likedByMe
                   ? `Unlike tweet (${tweet.likesCount} likes)`
                   : `Like tweet (${tweet.likesCount} likes)`
               }
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm transition-colors',
+                'inline-flex min-w-13 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 py-1 text-sm transition-colors',
                 'hover:bg-danger-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
-                'disabled:cursor-not-allowed disabled:opacity-50',
+                isLikePendingForTweet && 'opacity-70',
                 tweet.likedByMe ? 'text-like' : 'text-muted hover:text-like',
               )}
             >
               <Heart
-                className={cn('size-4', tweet.likedByMe && 'fill-current')}
+                className={cn('size-4 shrink-0', tweet.likedByMe && 'fill-current')}
                 aria-hidden
               />
-              <span>{tweet.likesCount}</span>
+              <span className="min-w-5 tabular-nums">{tweet.likesCount}</span>
             </button>
 
             {isOwn ? (
@@ -106,9 +113,9 @@ export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                disabled={isDeletePending || isLikePending}
+                disabled={isDeletePendingForTweet || isLikePendingForTweet}
                 onClick={handleDelete}
-                className="text-muted hover:text-danger"
+                className="cursor-pointer text-muted hover:text-danger disabled:cursor-not-allowed"
                 aria-label="Delete tweet"
               >
                 <Trash2 className="size-4" aria-hidden />
