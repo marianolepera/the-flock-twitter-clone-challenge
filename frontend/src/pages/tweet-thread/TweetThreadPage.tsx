@@ -1,33 +1,27 @@
 import { ArrowLeft } from 'lucide-react'
-import { useEffect } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { ComposeTweet } from '@/features/tweets/components/ComposeTweet'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
 import { TweetCardSkeleton } from '@/features/tweets/components/TweetCardSkeleton'
-import { useGetThread } from '@/hooks/tweets/useGetThread/useGetThread'
 import { formatApiError } from '@/lib/format-api-error'
-import { isTweetNotFoundError } from '@/lib/tweet-errors'
 import { paths } from '@/routes/paths'
-import { useSnackbarStore } from '@/stores/snackbar.store'
-import { useAuthStore } from '@/stores/auth.store'
+
+import { useTweetThreadPage } from './hooks/useTweetThreadPage'
 
 export function TweetThreadPage() {
-  const { tweetId = '' } = useParams()
-  const navigate = useNavigate()
-  const currentUser = useAuthStore((s) => s.user)
-  const { data, isLoading, isError, isSuccess, error } = useGetThread(tweetId)
-
-  const showThread = isSuccess && data && !isError
-  const threadMissing = isError && isTweetNotFoundError(error)
-
-  useEffect(() => {
-    if (!threadMissing) return
-
-    useSnackbarStore.getState().show('This tweet was deleted')
-    navigate(paths.home, { replace: true })
-  }, [threadMissing, navigate])
+  const {
+    currentUser,
+    data,
+    isLoading,
+    isError,
+    error,
+    showThread,
+    threadMissing,
+    handleTweetDeleted,
+    handleTweetNotFound,
+  } = useTweetThreadPage()
 
   return (
     <div>
@@ -56,13 +50,13 @@ export function TweetThreadPage() {
         </p>
       ) : null}
 
-      {showThread ? (
+      {showThread && data ? (
         <>
           <TweetCard
             tweet={data.root}
             currentUserId={currentUser?.id}
             showReplyButton={false}
-            onDeleted={() => navigate(paths.home)}
+            onDeleted={handleTweetDeleted}
           />
 
           {data.replies.length > 0 ? (
@@ -83,10 +77,7 @@ export function TweetThreadPage() {
             placeholder="Post your reply"
             submitLabel="Reply"
             fieldId="compose-reply"
-            onTweetNotFound={() => {
-              useSnackbarStore.getState().show('This tweet was deleted')
-              navigate(paths.home, { replace: true })
-            }}
+            onTweetNotFound={handleTweetNotFound}
           />
         </>
       ) : null}

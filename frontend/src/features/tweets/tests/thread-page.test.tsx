@@ -9,7 +9,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { createTweet } from '@/api/tweets/tweets-api'
 import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 import { mockReplyTweet, mockTweet } from '@/features/tweets/tests/fixtures'
-import { TweetThreadPage } from '@/pages/TweetThreadPage'
+import { TweetThreadPage } from '@/pages/tweet-thread/TweetThreadPage'
 import {
   createTestQueryClient,
   resetSnackbarStore,

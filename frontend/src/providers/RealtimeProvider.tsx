@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { TimelineUpdatesProvider } from '@/context/timeline-updates-context'
+import { TimelineUpdatesProvider } from '@/context/TimelineUpdatesProvider'
 
 interface RealtimeProviderProps {
   children: ReactNode

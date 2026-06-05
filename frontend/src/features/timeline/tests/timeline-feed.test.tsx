@@ -11,7 +11,7 @@ vi.mock('@/lib/socket', () => ({
 }))
 
 import { getTimeline } from '@/api/timeline/timeline-api'
-import { TimelineUpdatesProvider } from '@/context/timeline-updates-context'
+import { TimelineUpdatesProvider } from '@/context/TimelineUpdatesProvider'
 import { TimelineFeed } from '@/features/timeline/components/TimelineFeed'
 import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 import { mockTweet } from '@/features/tweets/tests/fixtures'

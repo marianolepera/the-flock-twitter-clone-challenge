@@ -1,4 +1,4 @@
-import { useTimelineUpdates } from '@/context/timeline-updates-context'
+import { useTimelineUpdates } from '@/context/useTimelineUpdates'
 import { useGetTimeline } from '@/hooks/timeline/useGetTimeline/useGetTimeline'
 import { useLoadMoreOnScroll } from '@/hooks/useLoadMoreOnScroll/useLoadMoreOnScroll'
 import { useAuthStore } from '@/stores/auth.store'

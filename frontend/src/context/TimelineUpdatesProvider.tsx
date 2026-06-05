@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -9,6 +7,7 @@ import {
 } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
+import { TimelineUpdatesContext } from '@/context/timeline-updates-context'
 import { useNotificationSocket } from '@/hooks/realtime/useNotificationSocket'
 import { useSocket } from '@/hooks/realtime/useSocket'
 import { timelineKeys } from '@/hooks/timeline/query-keys'
@@ -16,14 +15,6 @@ import { TIMELINE_NEW_TWEET_EVENT } from '@/lib/realtime-events'
 import { getSocket } from '@/lib/socket'
 import { useAuthStore } from '@/stores/auth.store'
 import type { Tweet } from '@/types/api.types'
-
-interface TimelineUpdatesContextValue {
-  hasNewTweets: boolean
-  refreshTimeline: () => void
-}
-
-const TimelineUpdatesContext =
-  createContext<TimelineUpdatesContextValue | null>(null)
 
 export function TimelineUpdatesProvider({ children }: { children: ReactNode }) {
   useSocket()
@@ -77,12 +68,4 @@ export function TimelineUpdatesProvider({ children }: { children: ReactNode }) {
       {children}
     </TimelineUpdatesContext.Provider>
   )
-}
-
-export function useTimelineUpdates() {
-  const context = useContext(TimelineUpdatesContext)
-  if (!context) {
-    throw new Error('useTimelineUpdates must be used within TimelineUpdatesProvider')
-  }
-  return context
 }

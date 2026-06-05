@@ -1,14 +1,12 @@
-import { useState } from 'react'
-
 import {
   UserSearchForm,
   UserSearchResults,
 } from '@/features/users/components/UserSearch'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue/useDebouncedValue'
+
+import { useSearchPage } from './hooks/useSearchPage'
 
 export function SearchPage() {
-  const [query, setQuery] = useState('')
-  const debouncedQuery = useDebouncedValue(query, 300)
+  const { query, setQuery, debouncedQuery } = useSearchPage()
 
   return (
     <>

@@ -1,4 +1,3 @@
-/** Mirrors backend `PASSWORD_REGEX` in common/password.validation.ts */
 export const PASSWORD_REGEX =
   /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,72}$/
 
