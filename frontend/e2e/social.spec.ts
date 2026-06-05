@@ -28,11 +28,24 @@ test.describe('Social flows', () => {
   })
 
   test('follows a user from search', async ({ page }) => {
-    await page.goto('/search')
-    await page.getByLabel(/search users/i).fill('bob')
+    // Use a user Alice does not follow in seed (bob/carol/dave are already followed).
+    const target = 'eve'
 
-    const followButton = page.getByRole('button', { name: /follow @bob/i })
-    const unfollowButton = page.getByRole('button', { name: /unfollow @bob/i })
+    await page.goto('/search')
+    await page.getByLabel(/search users/i).fill(target)
+
+    const followButton = page.getByRole('button', {
+      name: new RegExp(`follow @${target}`, 'i'),
+    })
+    const unfollowButton = page.getByRole('button', {
+      name: new RegExp(`unfollow @${target}`, 'i'),
+    })
+
+    await expect(
+      page.getByRole('button', {
+        name: new RegExp(`loading follow status for @${target}`, 'i'),
+      }),
+    ).toBeHidden({ timeout: 15_000 })
 
     await expect(followButton.or(unfollowButton)).toBeVisible({
       timeout: 15_000,
@@ -44,7 +57,7 @@ test.describe('Social flows', () => {
     }
 
     await followButton.click()
-    await expect(unfollowButton).toBeVisible()
+    await expect(unfollowButton).toBeVisible({ timeout: 15_000 })
   })
 
   test('opens notifications and marks them as read', async ({ page }) => {
