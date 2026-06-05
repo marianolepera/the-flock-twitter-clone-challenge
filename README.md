@@ -11,7 +11,7 @@ A functional Twitter/X clone: **NestJS + PostgreSQL** (`backend/`) and **React +
 
 ## Runbook — quick start (reviewers)
 
-> **One command, full stack.** After cloning the repo, `docker compose up --build -d` is enough — no Node.js, no `npm install`, no manual migrations, and no `.env` file required for the default setup.
+> **One command, full stack.** After cloning the repo, `./start.sh` is enough — no Node.js, no `npm install`, no manual migrations, and no `.env` file required for the default setup. The script starts Docker and prints every service URL and port.
 
 **Requirements:** Docker 24+ and Docker Compose v2.
 
@@ -23,6 +23,12 @@ cd the-flock-twitter-clone-challenge
 ```
 
 ### 2. Start everything
+
+```bash
+./start.sh
+```
+
+Equivalent (without the port summary banner):
 
 ```bash
 docker compose up --build -d
@@ -57,7 +63,7 @@ curl -s http://localhost:3000/health   # "status":"ok", "database":"connected"
 ```bash
 docker compose down              # keep data
 docker compose down -v           # wipe DB volume
-docker compose up --build -d     # fresh start
+./start.sh                       # fresh start
 ```
 
 ### Common issues
