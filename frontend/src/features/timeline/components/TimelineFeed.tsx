@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
 
 import { Button } from '@/components/atoms/Button'
-import { Spinner } from '@/components/atoms/Spinner'
+import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { useTimelineUpdates } from '@/context/timeline-updates-context'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
+import { TweetCardSkeleton } from '@/features/tweets/components/TweetCardSkeleton'
 import { useGetTimeline } from '@/hooks/timeline/useGetTimeline/useGetTimeline'
 import { formatApiError } from '@/lib/format-api-error'
 import { useAuthStore } from '@/stores/auth.store'
@@ -46,9 +47,10 @@ export function TimelineFeed() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" label="Loading timeline" />
-      </div>
+      <FeedSkeletonList
+        label="Loading timeline"
+        renderItem={() => <TweetCardSkeleton />}
+      />
     )
   }
 
@@ -104,13 +106,16 @@ export function TimelineFeed() {
         ))}
       </ul>
 
-      <div ref={loadMoreRef} className="flex justify-center py-6" aria-hidden>
-        {isFetchingNextPage ? (
-          <Spinner size="md" label="Loading more tweets" />
-        ) : hasNextPage ? (
-          <span className="text-sm text-subtle">Scroll for more</span>
+      <div ref={loadMoreRef} aria-hidden>
+        {isFetchingNextPage ? <TweetCardSkeleton /> : null}
+        {isFetchingNextPage ? null : hasNextPage ? (
+          <div className="flex justify-center py-6">
+            <span className="text-sm text-subtle">Scroll for more</span>
+          </div>
         ) : (
-          <span className="text-sm text-subtle">You&apos;re all caught up</span>
+          <div className="flex justify-center py-6">
+            <span className="text-sm text-subtle">You&apos;re all caught up</span>
+          </div>
         )}
       </div>
     </section>

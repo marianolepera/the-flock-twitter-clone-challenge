@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 
 import { Button } from '@/components/atoms/Button'
-import { Spinner } from '@/components/atoms/Spinner'
+import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
+import { TweetCardSkeleton } from '@/features/tweets/components/TweetCardSkeleton'
 import { useGetUserTweets } from '@/hooks/tweets/useGetUserTweets/useGetUserTweets'
 import { formatApiError } from '@/lib/format-api-error'
 import { useAuthStore } from '@/stores/auth.store'
@@ -48,9 +49,10 @@ export function UserTweetsFeed({ username }: UserTweetsFeedProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" label="Loading tweets" />
-      </div>
+      <FeedSkeletonList
+        label={`Loading tweets by @${username}`}
+        renderItem={() => <TweetCardSkeleton />}
+      />
     )
   }
 
@@ -94,11 +96,12 @@ export function UserTweetsFeed({ username }: UserTweetsFeedProps) {
         ))}
       </ul>
 
-      <div ref={loadMoreRef} className="flex justify-center py-6" aria-hidden>
-        {isFetchingNextPage ? (
-          <Spinner size="md" label="Loading more tweets" />
-        ) : hasNextPage ? (
-          <span className="text-sm text-subtle">Scroll for more</span>
+      <div ref={loadMoreRef} aria-hidden>
+        {isFetchingNextPage ? <TweetCardSkeleton /> : null}
+        {hasNextPage && !isFetchingNextPage ? (
+          <div className="flex justify-center py-6">
+            <span className="text-sm text-subtle">Scroll for more</span>
+          </div>
         ) : null}
       </div>
     </section>

@@ -1,8 +1,9 @@
 import { Search } from 'lucide-react'
 
 import { Input } from '@/components/atoms/Input'
-import { Spinner } from '@/components/atoms/Spinner'
+import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { UserCard } from '@/features/users/components/UserCard'
+import { UserCardSkeleton } from '@/features/users/components/UserCardSkeleton'
 import {
   MIN_SEARCH_QUERY_LENGTH,
   useSearchUsers,
@@ -32,9 +33,11 @@ export function UserSearchResults({ query }: UserSearchResultsProps) {
 
   if (isLoading || (isFetching && !users)) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" label="Searching users" />
-      </div>
+      <FeedSkeletonList
+        label="Searching users"
+        count={4}
+        renderItem={() => <UserCardSkeleton />}
+      />
     )
   }
 

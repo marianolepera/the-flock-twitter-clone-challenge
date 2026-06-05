@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 
 import { Button } from '@/components/atoms/Button'
-import { Spinner } from '@/components/atoms/Spinner'
+import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { UserCard } from '@/features/users/components/UserCard'
+import { UserCardSkeleton } from '@/features/users/components/UserCardSkeleton'
 import { useGetFollowers } from '@/hooks/users/useGetFollowers/useGetFollowers'
 import { useGetFollowingList } from '@/hooks/users/useGetFollowingList/useGetFollowingList'
 import { formatApiError } from '@/lib/format-api-error'
@@ -45,9 +46,10 @@ export function UserFollowList({ username, type }: UserFollowListProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" label={`Loading ${type}`} />
-      </div>
+      <FeedSkeletonList
+        label={type === 'followers' ? 'Loading followers' : 'Loading following'}
+        renderItem={() => <UserCardSkeleton />}
+      />
     )
   }
 
@@ -88,11 +90,12 @@ export function UserFollowList({ username, type }: UserFollowListProps) {
         ))}
       </ul>
 
-      <div ref={loadMoreRef} className="flex justify-center py-6" aria-hidden>
-        {isFetchingNextPage ? (
-          <Spinner size="md" label={`Loading more ${type}`} />
-        ) : hasNextPage ? (
-          <span className="text-sm text-subtle">Scroll for more</span>
+      <div ref={loadMoreRef} aria-hidden>
+        {isFetchingNextPage ? <UserCardSkeleton /> : null}
+        {hasNextPage && !isFetchingNextPage ? (
+          <div className="flex justify-center py-6">
+            <span className="text-sm text-subtle">Scroll for more</span>
+          </div>
         ) : null}
       </div>
     </section>
