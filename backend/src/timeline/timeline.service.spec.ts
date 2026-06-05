@@ -163,6 +163,22 @@ describe('TimelineService', () => {
     );
   });
 
+  it('getFeed throws BadRequestException for cursor with invalid date', async () => {
+    (followRepo.find as jest.Mock).mockResolvedValue([]);
+
+    await expect(service.getFeed('u1', 'not-a-date|t1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('getFeed throws BadRequestException for cursor with empty id', async () => {
+    (followRepo.find as jest.Mock).mockResolvedValue([]);
+
+    await expect(
+      service.getFeed('u1', '2024-06-03T12:00:00.000Z|'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
   it('getFeed applies cursor filter for next page', async () => {
     (followRepo.find as jest.Mock).mockResolvedValue([]);
     const qb = mockQueryBuilder([followedTweet]);

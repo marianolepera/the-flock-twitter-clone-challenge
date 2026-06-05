@@ -39,23 +39,29 @@ describe('TweetsService', () => {
   let tweetRepo: MockRepo<Tweet>;
   let likeRepo: MockRepo<Like>;
   let userRepo: MockRepo<User>;
-  let notificationsService: { create: jest.Mock };
-  let eventsGateway: { emitTimelineNewTweet: jest.Mock };
+  let createNotification: jest.Mock;
+  let emitTimelineNewTweet: jest.Mock;
+  let notificationsService: NotificationsService;
+  let eventsGateway: EventsGateway;
 
   beforeEach(() => {
     tweetRepo = mockRepo<Tweet>();
     likeRepo = mockRepo<Like>();
     userRepo = mockRepo<User>();
-    notificationsService = { create: jest.fn().mockResolvedValue(undefined) };
+    createNotification = jest.fn().mockResolvedValue(undefined);
+    emitTimelineNewTweet = jest.fn().mockResolvedValue(undefined);
+    notificationsService = {
+      create: createNotification,
+    } as unknown as NotificationsService;
     eventsGateway = {
-      emitTimelineNewTweet: jest.fn().mockResolvedValue(undefined),
-    };
+      emitTimelineNewTweet,
+    } as unknown as EventsGateway;
     service = new TweetsService(
       tweetRepo as unknown as Repository<Tweet>,
       likeRepo as unknown as Repository<Like>,
       userRepo as unknown as Repository<User>,
-      notificationsService as unknown as NotificationsService,
-      eventsGateway as unknown as EventsGateway,
+      notificationsService,
+      eventsGateway,
     );
   });
 
@@ -82,7 +88,7 @@ describe('TweetsService', () => {
       author: authorSummary,
     });
 
-    expect(eventsGateway.emitTimelineNewTweet).toHaveBeenCalledWith(
+    expect(emitTimelineNewTweet).toHaveBeenCalledWith(
       'u1',
       expect.objectContaining({ id: 't1', authorId: 'u1' }),
     );
@@ -211,7 +217,7 @@ describe('TweetsService', () => {
       likesCount: 1,
       likedByMe: true,
     });
-    expect(notificationsService.create).toHaveBeenCalled();
+    expect(createNotification).toHaveBeenCalled();
   });
 
   it('unlike removes like', async () => {
@@ -228,5 +234,87 @@ describe('TweetsService', () => {
     await expect(
       service.create('missing', { content: 'Hello' }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('getByUsername throws NotFoundException when user does not exist', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(service.getByUsername('ghost', 'u1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('like throws NotFoundException when tweet does not exist', async () => {
+    (tweetRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(service.like('missing', 'u1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('mapTweetsWithLikes returns empty array for no tweets', async () => {
+    await expect(service.mapTweetsWithLikes([], 'u1')).resolves.toEqual([]);
+    expect(likeRepo.createQueryBuilder).not.toHaveBeenCalled();
+  });
+
+  it('mapTweetsWithLikes marks tweets as not liked when user has no likes', async () => {
+    const tweet: Tweet = {
+      id: 't1',
+      content: 'Hello',
+      authorId: 'u1',
+      author: {
+        id: 'u1',
+        email: 'a@a.com',
+        username: 'alice',
+        passwordHash: 'hash',
+        bio: '',
+        avatarUrl: authorSummary.avatarUrl,
+        tweets: [],
+        following: [],
+        followers: [],
+        likes: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      likes: [],
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-02'),
+    };
+
+    const qb = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+    (likeRepo.createQueryBuilder as jest.Mock).mockReturnValue(qb);
+    (likeRepo.find as jest.Mock).mockResolvedValue([]);
+
+    await expect(service.mapTweetsWithLikes([tweet], 'u2')).resolves.toEqual([
+      expect.objectContaining({
+        id: 't1',
+        likesCount: 0,
+        likedByMe: false,
+      }),
+    ]);
+  });
+
+  it('like throws NotFoundException when tweet author no longer exists', async () => {
+    (tweetRepo.findOne as jest.Mock).mockResolvedValue({
+      id: 't1',
+      authorId: 'missing',
+      content: 'hi',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    (likeRepo.findOne as jest.Mock).mockResolvedValue(null);
+    (likeRepo.create as jest.Mock).mockImplementation((x) => x);
+    (likeRepo.save as jest.Mock).mockResolvedValue({});
+    (userRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(service.like('t1', 'u2')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });
