@@ -8,7 +8,7 @@ import {
   getUnreadNotificationCount,
   markAllNotificationsRead,
 } from '@/api/notifications/notifications-api'
-import { NotificationsPage } from '@/pages/NotificationsPage'
+import { NotificationsPage } from '@/pages/notifications/NotificationsPage'
 import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 import { renderWithProviders } from '@/test/test-utils'
 import { paths } from '@/routes/paths'

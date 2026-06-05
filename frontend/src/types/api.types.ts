@@ -1,4 +1,3 @@
-/** Shared API types — aligned with backend responses. */
 
 export interface User {
   id: string

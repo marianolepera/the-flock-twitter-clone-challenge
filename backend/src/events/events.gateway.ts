@@ -103,7 +103,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private extractToken(client: Socket): string | null {
-    const authToken = client.handshake.auth?.token;
+    const auth = client.handshake.auth as Record<string, unknown> | undefined;
+    const authToken = auth?.token;
     if (typeof authToken === 'string' && authToken.length > 0) {
       return authToken;
     }

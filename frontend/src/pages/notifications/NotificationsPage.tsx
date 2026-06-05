@@ -1,13 +1,10 @@
-import { NotificationsFeed } from '@/features/notifications/components/NotificationsFeed'
 import { Button } from '@/components/atoms/Button'
-import { useGetUnreadCount } from '@/hooks/notifications/useGetUnreadCount/useGetUnreadCount'
-import { useMarkAllRead } from '@/hooks/notifications/useMarkAllRead/useMarkAllRead'
+import { NotificationsFeed } from '@/features/notifications/components/NotificationsFeed'
+
+import { useNotificationsPage } from './hooks/useNotificationsPage'
 
 export function NotificationsPage() {
-  const { data: unreadData } = useGetUnreadCount()
-  const { mutate: markAllRead, isPending } = useMarkAllRead()
-  const unreadCount = unreadData?.count ?? 0
-  const canMarkAllRead = unreadCount > 0
+  const { markAllRead, isPending, canMarkAllRead } = useNotificationsPage()
 
   return (
     <>

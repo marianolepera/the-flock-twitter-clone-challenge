@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import { isAxiosError } from 'axios'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/atoms/Button'
 import { Spinner } from '@/components/atoms/Spinner'
-import {
-  ProfileHeader,
-  type ProfileTab,
-} from '@/features/users/components/ProfileHeader'
+import { ProfileHeader } from '@/features/users/components/ProfileHeader'
 import { UserFollowList } from '@/features/users/components/UserFollowList'
 import { UserTweetsFeed } from '@/features/users/components/UserTweetsFeed'
-import { useGetProfile } from '@/hooks/users/useGetProfile/useGetProfile'
 import { formatApiError } from '@/lib/format-api-error'
 import { paths } from '@/routes/paths'
 
+import { useUserProfilePage } from './hooks/useUserProfilePage'
+
 export function UserProfilePage() {
-  const { username = '' } = useParams<{ username: string }>()
-  const [activeTab, setActiveTab] = useState<ProfileTab>('tweets')
-
-  const { data: profile, isLoading, isError, error, refetch } =
-    useGetProfile(username)
-
-  const isNotFound = isAxiosError(error) && error.response?.status === 404
+  const {
+    username,
+    activeTab,
+    setActiveTab,
+    profile,
+    isLoading,
+    isError,
+    isNotFound,
+    error,
+    refetch,
+  } = useUserProfilePage()
 
   return (
     <>
