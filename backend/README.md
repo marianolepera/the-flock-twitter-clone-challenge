@@ -1,12 +1,10 @@
 # Backend — NestJS API
 
-REST API for the Twitter clone. Monorepo setup: **[root README](../README.md)**.
+API reference. **Runbook, test credentials, and architecture:** **[root README](../README.md)**.
 
 - Base URL: `http://localhost:3000`
 - Format: JSON
 - Global validation: `ValidationPipe` (whitelist, `class-validator`)
-
-Setup: **[local development](../README.md#local-development)** (recommended) or **[Docker full stack](../README.md#docker-full-stack)**.
 
 ---
 

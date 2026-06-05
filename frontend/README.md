@@ -1,19 +1,10 @@
 # Frontend — React + Vite
 
-Twitter clone UI. Monorepo setup: **[root README](../README.md)**.
+Twitter clone UI. **Runbook and architecture:** **[root README](../README.md)**.
 
 ## Stack
 
-| Tool | Purpose |
-|------|---------|
-| [React 19](https://react.dev/) + [Vite](https://vite.dev/) | UI and dev server |
-| [Tailwind CSS v4](https://tailwindcss.com/docs) | Styling, design tokens, dark mode |
-| [TanStack Query](https://tanstack.com/query/latest) | Server state |
-| [Zustand](https://zustand.docs.pmnd.rs/) | Client state (auth, theme) |
-| [Axios](https://axios-http.com/) | HTTP client |
-| [Socket.IO client](https://socket.io/docs/v4/client-api/) | Real-time (timeline + notifications) |
-| [React Router](https://reactrouter.com/) | Routing |
-| [Lucide React](https://lucide.dev/) | Icons |
+React 19 · Vite · Tailwind CSS v4 · TanStack Query · Zustand · Axios · Socket.IO client · React Router · Lucide
 
 Folder layout: **[src/STRUCTURE.md](./src/STRUCTURE.md)**.
 
@@ -22,112 +13,47 @@ Folder layout: **[src/STRUCTURE.md](./src/STRUCTURE.md)**.
 | Path | Page |
 |------|------|
 | `/` | Public landing |
-| `/login`, `/register` | Sign in / sign up |
-| `/home`, `/notifications`, `/search`, `/profile` | App shell (protected) |
+| `/login`, `/register` | Auth |
+| `/home` | Timeline + composer |
+| `/search` | User search |
+| `/notifications` | Inbox |
+| `/tweets/:id` | Reply thread |
+| `/:username` | Profile |
 
 ## Environment
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_URL` | Backend base URL | `http://localhost:3000` |
+| Variable | Default |
+|----------|---------|
+| `VITE_API_URL` | `http://localhost:3000` |
 
-For local dev, optional `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-Docker build uses the root `.env.example` / compose `VITE_API_URL` build arg.
-
-The WebSocket client connects to `{VITE_API_URL}/events` (same host as the API).
-
-## Real-time (Socket.IO)
-
-Bonus: live updates without polling the unread-count endpoint.
-
-| Event | UI behavior |
-|-------|-------------|
-| `timeline:new-tweet` | Sticky banner on Home: **“New tweets — Show them”** → invalidates timeline query |
-| `notification:new` | Invalidates unread count + notifications list (bell badge updates) |
-
-**Code layout**
-
-| Path | Role |
-|------|------|
-| `src/lib/socket.ts` | Singleton connect/disconnect with access token |
-| `src/lib/realtime-events.ts` | Event name constants |
-| `src/context/timeline-updates-context.tsx` | Socket + timeline banner state |
-| `src/providers/RealtimeProvider.tsx` | Wraps authenticated app routes (`AppLayout`) |
-
-Connection runs only while the user is logged in; `disconnectSocket()` runs on logout / token clear.
-
-See also: [root README — Bonus features](../README.md#bonus-features-challenge) and [backend WebSockets](../backend/README.md#websockets-socketio).
-
-## Image uploads
-
-Optional image attachment when composing a tweet (Home, profile, thread reply).
-
-| Item | Detail |
-|------|--------|
-| UI | Image button in `ComposeTweet`; preview with remove (✕) before posting |
-| Validation | Client-side: images only, max **5 MB** (oversized files → red error snackbar) |
-| API | `createTweet()` sends `FormData` when an image is selected; otherwise JSON |
-| Display | `TweetCard` renders `imageUrl` via `mediaUrl()` in `src/lib/api-url.ts` |
-| Rules | One image per tweet; tweet can be text-only, image-only, or both |
-
-**Code layout**
-
-| Path | Role |
-|------|------|
-| `src/features/tweets/components/ComposeTweet.tsx` | File input, preview, submit with optional `image` |
-| `src/features/tweets/components/TweetCard.tsx` | Renders tweet image below text |
-| `src/api/tweets/tweets-api.ts` | `FormData` vs JSON for `POST /tweets` |
-| `src/lib/api-url.ts` | `mediaUrl()` — builds full URL from stored path |
+Optional in `frontend/.env`. WebSocket: `{VITE_API_URL}/events`.
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Dev server (http://localhost:5173) |
+| `npm run dev` | Dev server → http://localhost:5173 |
 | `npm run build` | Production build |
-| `npm run preview` | Preview production build |
-| `npm run lint` | ESLint |
-| `npm test` | Vitest (watch) — unit & integration tests |
-| `npm run test:run` | Vitest (single run, CI) |
-| `npm run test:e2e` | Playwright E2E (requires API + UI running) |
-| `npm run test:e2e:ui` | Playwright UI mode |
+| `npm test` / `npm run test:run` | Vitest |
+| `npm run test:e2e` | Playwright (API + UI + seed must be running) |
+| `npm run test:e2e:install` | Install Playwright browsers |
 
-### Testing
-
-**Vitest + React Testing Library** (`src/**/*.test.ts(x)`): auth, tweets, timeline, search, profile, follow, notifications, image uploads, layouts, atoms, API modules, hooks, and utilities.
-
-**Playwright E2E** (`e2e/`): real login, compose tweet, follow from search, notifications. Prerequisites:
+### E2E
 
 ```bash
-
 docker compose up -d
-
-
-cd frontend
-npm run test:e2e:install   
-npm run test:e2e
+cd backend && npm run seed
+cd frontend && npm run test:e2e:install && npm run test:e2e
 ```
 
-**Browsers:** By default, local E2E uses **Google Chrome** already installed on your Mac (`channel: 'chrome'`). If you do not have Chrome, either install it or run:
+By default uses system Chrome. Without Chrome: `PLAYWRIGHT_BUNDLE_CHROMIUM=true npm run test:e2e` after `test:e2e:install`.
 
-```bash
-npm run test:e2e:install
-PLAYWRIGHT_BUNDLE_CHROMIUM=true npm run test:e2e
-```
+## Tests (Vitest)
 
-If you see `Executable doesn't exist`, run `npm run test:e2e:install` (or install [Google Chrome](https://www.google.com/chrome/)).
+Coverage in `src/**/*.test.ts(x)`: auth, tweets, timeline, search, profile, follow, notifications, images, layouts, and utilities.
 
-## Breakpoints (mobile-first)
+## UI
 
-- **Mobile:** default (&lt; 640px)
-- **Tablet:** `sm:` (≥ 640px)
-- **Desktop:** `lg:` (≥ 1024px)
-
-## Theme
-
-Semantic colors and light/dark themes are in `src/index.css`. Use the sun/moon toggle (sidebar, mobile header, or landing top-right); preference persists in `localStorage` (`the-flock-theme`). Default follows the OS until you toggle.
+- **Theme:** light/dark in `src/index.css`; toggle persists in `localStorage`.
+- **Breakpoints:** mobile (&lt;640px), `sm:` ≥640px, `lg:` ≥1024px.
+- **Real-time / images:** see **[backend/README.md](../backend/README.md)** (WebSockets, uploads).
