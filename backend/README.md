@@ -177,28 +177,6 @@ The previous refresh token is revoked and linked to the new DB record.
 
 Controller uses `@UseGuards(JwtAuthGuard)` on all routes.
 
-#### `GET /users`
-
-**Query:**
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| `page` | int | `1` | Page |
-| `limit` | int | `10` | Items per page (max per DTO) |
-
-**Response:** `200`
-
-```json
-{
-  "items": [ { "id", "email", "username", "bio", "avatarUrl", "createdAt", "updatedAt" } ],
-  "total": 12,
-  "page": 1,
-  "limit": 10
-}
-```
-
----
-
 #### `GET /users/search`
 
 **Query:**

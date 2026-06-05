@@ -16,7 +16,6 @@ type MockRepo<T extends object> = Partial<
 function mockRepo<T extends object>(): MockRepo<T> {
   return {
     findOne: jest.fn(),
-    findAndCount: jest.fn(),
     find: jest.fn(),
     save: jest.fn(),
   };
@@ -161,17 +160,6 @@ describe('UsersService', () => {
     await expect(service.getProfileByUsername('alice')).resolves.toEqual(
       profile,
     );
-  });
-
-  it('list returns paginated users', async () => {
-    (userRepo.findAndCount as jest.Mock).mockResolvedValue([[profile], 1]);
-
-    await expect(service.list(1, 10)).resolves.toEqual({
-      items: [profile],
-      total: 1,
-      page: 1,
-      limit: 10,
-    });
   });
 
   it('search returns matching users', async () => {

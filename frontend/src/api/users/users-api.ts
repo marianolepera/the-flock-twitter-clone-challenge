@@ -25,13 +25,6 @@ export interface UpdateProfilePayload {
   newPassword?: string
 }
 
-export async function getUsers(params: PaginationParams = {}) {
-  const { data } = await apiClient.get<PaginatedResponse<User>>('/users', {
-    params,
-  })
-  return data
-}
-
 export async function searchUsers(params: SearchUsersParams) {
   const { data } = await apiClient.get<User[]>('/users/search', { params })
   return data

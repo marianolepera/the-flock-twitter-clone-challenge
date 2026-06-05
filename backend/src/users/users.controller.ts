@@ -18,7 +18,6 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { FollowsService } from '../follows/follows.service';
 import { TweetsService } from '../tweets/tweets.service';
 import { User } from './entities/user.entity';
-import { ListUsersDto } from './dto/list-users.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
@@ -35,11 +34,6 @@ export class UsersController {
     private readonly followsService: FollowsService,
     private readonly tweetsService: TweetsService,
   ) {}
-
-  @Get()
-  list(@Query() query: ListUsersDto) {
-    return this.usersService.list(query.page, query.limit);
-  }
 
   @Get('search')
   search(@Query() query: SearchUsersDto) {

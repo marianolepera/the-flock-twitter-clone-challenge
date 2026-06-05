@@ -121,20 +121,6 @@ export class UsersService {
     return this.getProfileById(userId);
   }
 
-  async list(page = 1, limit = 10) {
-    const take = limit;
-    const skip = (page - 1) * take;
-
-    const [items, total] = await this.userRepository.findAndCount({
-      take,
-      skip,
-      order: { createdAt: 'DESC' },
-      select: PROFILE_SELECT,
-    });
-
-    return { items, total, page, limit };
-  }
-
   async search(q: string, limit = 10) {
     const query = q.trim();
 

@@ -12,7 +12,6 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { Snackbar } from '@/components/molecules/Snackbar'
 import { paths } from '@/routes/paths'
 import { useSnackbarStore } from '@/stores/snackbar.store'
-import { useThemeStore } from '@/stores/theme.store'
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -25,12 +24,6 @@ export function createTestQueryClient() {
 
 export function resetSnackbarStore() {
   useSnackbarStore.getState().hide()
-}
-
-export function resetThemeStore() {
-  useThemeStore.setState({ preference: 'light' })
-  document.documentElement.classList.remove('dark')
-  document.documentElement.style.colorScheme = 'light'
 }
 
 interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
