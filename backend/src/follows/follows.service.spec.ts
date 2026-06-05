@@ -178,4 +178,36 @@ describe('FollowsService', () => {
       limit: 10,
     });
   });
+
+  it('getFollowers uses default pagination when page and limit are omitted', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue({ id: 'u1' });
+    (followRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0]);
+
+    await expect(service.getFollowers('alice')).resolves.toEqual({
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+    });
+
+    expect(followRepo.findAndCount).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 10, skip: 0 }),
+    );
+  });
+
+  it('getFollowing uses default pagination when page and limit are omitted', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue({ id: 'u1' });
+    (followRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0]);
+
+    await expect(service.getFollowing('alice')).resolves.toEqual({
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+    });
+
+    expect(followRepo.findAndCount).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 10, skip: 0 }),
+    );
+  });
 });

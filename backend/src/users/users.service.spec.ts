@@ -155,6 +155,14 @@ describe('UsersService', () => {
     );
   });
 
+  it('getProfileByUsername returns public profile fields', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue(profile);
+
+    await expect(service.getProfileByUsername('alice')).resolves.toEqual(
+      profile,
+    );
+  });
+
   it('list returns paginated users', async () => {
     (userRepo.findAndCount as jest.Mock).mockResolvedValue([[profile], 1]);
 
@@ -184,5 +192,71 @@ describe('UsersService', () => {
         currentPassword: 'Password123!',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('updateProfile updates username when available', async () => {
+    const user = mockUser();
+    const updatedProfile: PublicProfile = { ...profile, username: 'alice2' };
+    (userRepo.findOne as jest.Mock)
+      .mockResolvedValueOnce(user)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(updatedProfile);
+    (userRepo.save as jest.Mock).mockImplementation((u: User) =>
+      Promise.resolve(u),
+    );
+
+    await expect(
+      service.updateProfile('u1', { username: 'alice2' }),
+    ).resolves.toMatchObject({ username: 'alice2' });
+
+    expect(userRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ username: 'alice2' }),
+    );
+  });
+
+  it('updateProfile updates avatarUrl', async () => {
+    const user = mockUser();
+    const updatedProfile: PublicProfile = {
+      ...profile,
+      avatarUrl: 'https://example.com/new.png',
+    };
+    (userRepo.findOne as jest.Mock)
+      .mockResolvedValueOnce(user)
+      .mockResolvedValueOnce(updatedProfile);
+    (userRepo.save as jest.Mock).mockImplementation((u: User) =>
+      Promise.resolve(u),
+    );
+
+    await expect(
+      service.updateProfile('u1', {
+        avatarUrl: 'https://example.com/new.png',
+      }),
+    ).resolves.toMatchObject({
+      avatarUrl: 'https://example.com/new.png',
+    });
+  });
+
+  it('updateProfile updates password with valid currentPassword', async () => {
+    const passwordHash = await bcrypt.hash('Password123!', 10);
+    const user = mockUser({ passwordHash });
+    (userRepo.findOne as jest.Mock)
+      .mockResolvedValueOnce(user)
+      .mockResolvedValueOnce(profile);
+    (userRepo.save as jest.Mock).mockImplementation((u: User) =>
+      Promise.resolve(u),
+    );
+
+    await expect(
+      service.updateProfile('u1', {
+        currentPassword: 'Password123!',
+        newPassword: 'Newpassword123!',
+      }),
+    ).resolves.toMatchObject({ id: 'u1' });
+
+    expect(userRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        passwordHash: expect.not.stringMatching(/^hashed$/) as string,
+      }),
+    );
   });
 });
