@@ -6,7 +6,6 @@ Twitter clone UI. **Runbook and architecture:** **[root README](../README.md)**.
 
 React 19 · Vite · Tailwind CSS v4 · TanStack Query · Zustand · Axios · Socket.IO client · React Router · Lucide
 
-Folder layout: **[src/STRUCTURE.md](./src/STRUCTURE.md)**.
 
 ## Routes
 

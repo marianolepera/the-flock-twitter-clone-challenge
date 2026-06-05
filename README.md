@@ -11,27 +11,39 @@ A functional Twitter/X clone: **NestJS + PostgreSQL** (`backend/`) and **React +
 
 ## Runbook — quick start (reviewers)
 
-**Requirements:** Docker 24+ and Docker Compose v2. Node.js on the host is not required.
+> **One command, full stack.** After cloning the repo, `docker compose up --build -d` is enough — no Node.js, no `npm install`, no manual migrations, and no `.env` file required for the default setup.
+
+**Requirements:** Docker 24+ and Docker Compose v2.
+
+### 1. Clone (once)
 
 ```bash
 git clone <REPO_URL>
 cd the-flock-twitter-clone-challenge
+```
+
+### 2. Start everything
+
+```bash
 docker compose up --build -d
 ```
 
-Wait ~30–90 seconds, then verify:
+This single command brings up **Postgres + API + UI** and, on first start:
+
+| Step | Done automatically |
+|------|--------------------|
+| Database | Postgres container on port `5432` |
+| Schema | Migrations applied |
+| Sample data | Seed (`RUN_SEED=true`): 12 users, tweets, follows, likes, notifications |
+| Backend | API at http://localhost:3000 |
+| Frontend | App at **http://localhost:5173** ← open this in your browser |
+
+Wait ~30–90 seconds on first boot, then verify:
 
 ```bash
-docker compose ps
-curl -s http://localhost:3000/health
+docker compose ps          # all services Up; backend healthy
+curl -s http://localhost:3000/health   # "status":"ok", "database":"connected"
 ```
-
-Expected response: `"status":"ok"` and `"database":"connected"`.
-
-| Service | URL |
-|---------|-----|
-| **App (open in browser)** | http://localhost:5173 |
-| **API** | http://localhost:3000 |
 
 **Test login** (seed data):
 
@@ -39,8 +51,6 @@ Expected response: `"status":"ok"` and `"database":"connected"`.
 |-------|--------|
 | Email | `alice@example.com` |
 | Password | `Password123!` |
-
-On startup, the backend runs migrations and an automatic **seed** (`RUN_SEED=true`): 12 users, tweets, follows, likes, and notifications.
 
 **Stop / reset:**
 
