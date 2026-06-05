@@ -300,13 +300,32 @@ All routes require JWT.
 
 ```json
 {
-  "content": "Hello world"
+  "content": "Hello world",
+  "parentTweetId": "optional-uuid"
 }
 ```
 
 - `content`: 1–280 characters.
+- `parentTweetId` (optional): reply to an existing tweet. Replies are attached to the thread root and do not appear in the timeline feed.
 
-**Response:** `201` — tweet with `likesCount: 0`, `likedByMe: false`, embedded `author`.
+**Response:** `201` — tweet with `likesCount: 0`, `likedByMe: false`, `repliesCount: 0`, `parentTweetId`, embedded `author`.
+
+---
+
+#### `GET /tweets/:id/thread`
+
+Returns the root tweet and all replies in chronological order.
+
+**Response:** `200`
+
+```json
+{
+  "root": { "id", "content", "author", "parentTweetId", "likesCount", "likedByMe", "repliesCount", "createdAt", "updatedAt" },
+  "replies": [ /* same shape, ordered ASC */ ]
+}
+```
+
+**Errors:** `404` tweet not found.
 
 ---
 
@@ -506,4 +525,3 @@ CORS is configured via `CORS_ORIGIN` (default `http://localhost:5173`).
 - **Real-time:** WebSocket push + client-driven timeline refetch; tweets are not inserted live into the feed list.
 - **Search:** by `username` and `email`; no separate display name from username.
 - **Anonymous public profile:** `GET /users/:username` requires JWT.
-- **Tweet images and reply threads:** not implemented.

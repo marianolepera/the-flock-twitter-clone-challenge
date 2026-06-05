@@ -3,6 +3,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   Query,
   Request,
@@ -40,5 +41,11 @@ export class NotificationsController {
   @HttpCode(HttpStatus.OK)
   markAllRead(@Request() req: AuthRequest) {
     return this.notificationsService.markAllRead(req.user.id);
+  }
+
+  @Patch(':id/read')
+  @HttpCode(HttpStatus.OK)
+  markOneRead(@Request() req: AuthRequest, @Param('id') id: string) {
+    return this.notificationsService.markOneRead(req.user.id, id);
   }
 }

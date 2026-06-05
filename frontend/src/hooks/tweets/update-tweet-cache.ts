@@ -6,11 +6,30 @@ import type {
   PaginatedResponse,
   TimelineFeedResponse,
   Tweet,
+  TweetThreadResponse,
 } from '@/types/api.types'
 
 export type TweetCacheSnapshot = Array<
-  [readonly unknown[], InfiniteData<TimelineFeedResponse> | PaginatedResponse<Tweet> | undefined]
+  [
+    readonly unknown[],
+    (
+      | InfiniteData<TimelineFeedResponse>
+      | PaginatedResponse<Tweet>
+      | TweetThreadResponse
+      | undefined
+    ),
+  ]
 >
+
+function isThreadCache(data: unknown): data is TweetThreadResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'root' in data &&
+    'replies' in data &&
+    Array.isArray((data as TweetThreadResponse).replies)
+  )
+}
 
 export function snapshotTweetCaches(
   queryClient: QueryClient,
@@ -19,7 +38,9 @@ export function snapshotTweetCaches(
     ...queryClient.getQueriesData<InfiniteData<TimelineFeedResponse>>({
       queryKey: timelineKeys.all,
     }),
-    ...queryClient.getQueriesData<PaginatedResponse<Tweet>>({
+    ...queryClient.getQueriesData<
+      PaginatedResponse<Tweet> | TweetThreadResponse
+    >({
       queryKey: tweetKeys.all,
     }),
   ]
@@ -56,9 +77,19 @@ export function updateTweetInCaches(
     },
   )
 
-  queryClient.setQueriesData<PaginatedResponse<Tweet>>(
+  queryClient.setQueriesData<PaginatedResponse<Tweet> | TweetThreadResponse>(
     { queryKey: tweetKeys.all },
     (old) => {
+      if (isThreadCache(old)) {
+        const updateIfMatch = (tweet: Tweet) =>
+          tweet.id === tweetId ? updater(tweet) : tweet
+
+        return {
+          root: updateIfMatch(old.root),
+          replies: old.replies.map(updateIfMatch),
+        }
+      }
+
       if (!old?.items) return old
 
       return {

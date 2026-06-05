@@ -64,6 +64,17 @@ describe('TweetCard', () => {
     })
   })
 
+  it('links to the tweet thread from the reply button', () => {
+    renderWithProviders(
+      <TweetCard tweet={mockTweet} currentUserId={mockAuthResponse.user.id} />,
+    )
+
+    expect(screen.getByRole('link', { name: /0 replies/i })).toHaveAttribute(
+      'href',
+      `/tweets/${mockTweet.id}`,
+    )
+  })
+
   it('shows delete for own tweets only', () => {
     const { rerender } = renderWithProviders(
       <TweetCard tweet={mockTweet} currentUserId={mockAuthResponse.user.id} />,

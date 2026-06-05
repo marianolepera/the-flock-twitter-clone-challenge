@@ -1,8 +1,9 @@
 import { apiClient } from '@/api/client'
-import type { Tweet } from '@/types/api.types'
+import type { Tweet, TweetThreadResponse } from '@/types/api.types'
 
 export interface CreateTweetPayload {
   content: string
+  parentTweetId?: string
 }
 
 export async function createTweet(payload: CreateTweetPayload) {
@@ -21,4 +22,11 @@ export async function likeTweet(tweetId: string) {
 
 export async function unlikeTweet(tweetId: string) {
   await apiClient.delete(`/tweets/${tweetId}/like`)
+}
+
+export async function getThread(tweetId: string) {
+  const { data } = await apiClient.get<TweetThreadResponse>(
+    `/tweets/${tweetId}/thread`,
+  )
+  return data
 }

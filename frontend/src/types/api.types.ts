@@ -21,10 +21,17 @@ export interface Tweet {
   content: string
   authorId: string
   author: TweetAuthor
+  parentTweetId: string | null
   likesCount: number
   likedByMe: boolean
+  repliesCount: number
   createdAt: string
   updatedAt: string
+}
+
+export interface TweetThreadResponse {
+  root: Tweet
+  replies: Tweet[]
 }
 
 export interface PaginatedResponse<T> {
@@ -44,7 +51,7 @@ export interface FollowResponse {
   following: boolean
 }
 
-export type NotificationType = 'follow' | 'like'
+export type NotificationType = 'follow' | 'like' | 'reply'
 
 export interface NotificationActor {
   id: string

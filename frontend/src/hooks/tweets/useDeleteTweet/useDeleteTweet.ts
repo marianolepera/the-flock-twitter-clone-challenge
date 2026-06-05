@@ -24,7 +24,8 @@ export function useDeleteTweet() {
 
       return { snapshot, tweetId }
     },
-    onSuccess: () => {
+    onSuccess: (_data, tweetId) => {
+      queryClient.removeQueries({ queryKey: tweetKeys.thread(tweetId) })
       useSnackbarStore.getState().show('Tweet deleted')
     },
     onError: (_error, _tweetId, context) => {

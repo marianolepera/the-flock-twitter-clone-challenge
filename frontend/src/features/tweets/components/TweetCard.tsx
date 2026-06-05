@@ -1,4 +1,4 @@
-import { Heart, Trash2 } from 'lucide-react'
+import { Heart, MessageCircle, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { Avatar } from '@/components/atoms/Avatar'
@@ -14,9 +14,16 @@ import type { Tweet } from '@/types/api.types'
 export interface TweetCardProps {
   tweet: Tweet
   currentUserId?: string
+  showReplyButton?: boolean
+  onDeleted?: () => void
 }
 
-export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
+export function TweetCard({
+  tweet,
+  currentUserId,
+  showReplyButton = true,
+  onDeleted,
+}: TweetCardProps) {
   const likeMutation = useLikeTweet()
   const unlikeMutation = useUnlikeTweet()
   const deleteMutation = useDeleteTweet()
@@ -42,7 +49,11 @@ export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
   function handleDelete() {
     if (isDeletePendingForTweet) return
 
-    deleteMutation.mutate(tweet.id)
+    deleteMutation.mutate(tweet.id, {
+      onSuccess: () => {
+        onDeleted?.()
+      },
+    })
   }
 
   return (
@@ -107,6 +118,20 @@ export function TweetCard({ tweet, currentUserId }: TweetCardProps) {
               />
               <span className="min-w-5 tabular-nums">{tweet.likesCount}</span>
             </button>
+
+            {showReplyButton ? (
+              <Link
+                to={paths.tweet(tweet.id)}
+                aria-label={`${tweet.repliesCount} replies`}
+                className={cn(
+                  'inline-flex min-w-13 items-center justify-center gap-1.5 rounded-full px-2 py-1 text-sm text-muted transition-colors',
+                  'hover:bg-surface hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+                )}
+              >
+                <MessageCircle className="size-4 shrink-0" aria-hidden />
+                <span className="min-w-5 tabular-nums">{tweet.repliesCount}</span>
+              </Link>
+            ) : null}
 
             {isOwn ? (
               <Button
