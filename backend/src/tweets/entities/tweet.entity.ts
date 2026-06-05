@@ -19,6 +19,9 @@ export class Tweet {
   @Column({ length: 280 })
   content: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  imageUrl: string | null;
+
   @Column()
   authorId: string;
 

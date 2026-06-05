@@ -22,6 +22,7 @@ export interface Tweet {
   authorId: string
   author: TweetAuthor
   parentTweetId: string | null
+  imageUrl: string | null
   likesCount: number
   likedByMe: boolean
   repliesCount: number

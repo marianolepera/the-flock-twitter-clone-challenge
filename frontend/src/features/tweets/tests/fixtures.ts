@@ -12,6 +12,7 @@ export const mockTweet: Tweet = {
     avatarUrl: mockUser.avatarUrl,
   },
   parentTweetId: null,
+  imageUrl: null,
   likesCount: 0,
   likedByMe: false,
   repliesCount: 0,

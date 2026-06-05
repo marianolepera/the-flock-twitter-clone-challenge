@@ -4,10 +4,7 @@ import { Input } from '@/components/atoms/Input'
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { UserCard } from '@/features/users/components/UserCard'
 import { UserCardSkeleton } from '@/features/users/components/UserCardSkeleton'
-import {
-  MIN_SEARCH_QUERY_LENGTH,
-  useSearchUsers,
-} from '@/hooks/users/useSearchUsers/useSearchUsers'
+import { useUserSearchResults } from '@/features/users/hooks/useUserSearchResults'
 import { formatApiError } from '@/lib/format-api-error'
 
 export interface UserSearchResultsProps {
@@ -15,17 +12,23 @@ export interface UserSearchResultsProps {
 }
 
 export function UserSearchResults({ query }: UserSearchResultsProps) {
-  const trimmedQuery = query.trim()
-  const { data: users, isLoading, isFetching, isError, error } =
-    useSearchUsers(query)
+  const {
+    trimmedQuery,
+    users,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    minQueryLength,
+  } = useUserSearchResults(query)
 
-  if (trimmedQuery.length < MIN_SEARCH_QUERY_LENGTH) {
+  if (trimmedQuery.length < minQueryLength) {
     return (
       <div className="px-4 py-12 text-center">
         <p className="text-sm text-muted">
           {trimmedQuery.length === 0
             ? 'Search for people by username or email.'
-            : `Type at least ${MIN_SEARCH_QUERY_LENGTH} characters to search.`}
+            : `Type at least ${minQueryLength} characters to search.`}
         </p>
       </div>
     )

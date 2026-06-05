@@ -1,9 +1,10 @@
 import { IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 export class CreateTweetDto {
+  @IsOptional()
   @IsString()
-  @Length(1, 280)
-  content: string;
+  @Length(0, 280)
+  content?: string;
 
   @IsOptional()
   @IsUUID()

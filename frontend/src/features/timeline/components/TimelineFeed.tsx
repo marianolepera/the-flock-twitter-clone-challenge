@@ -1,49 +1,24 @@
-import { useEffect, useRef } from 'react'
-
 import { Button } from '@/components/atoms/Button'
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
-import { useTimelineUpdates } from '@/context/timeline-updates-context'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
 import { TweetCardSkeleton } from '@/features/tweets/components/TweetCardSkeleton'
-import { useGetTimeline } from '@/hooks/timeline/useGetTimeline/useGetTimeline'
+import { useTimelineFeed } from '@/features/timeline/hooks/useTimelineFeed'
 import { formatApiError } from '@/lib/format-api-error'
-import { useAuthStore } from '@/stores/auth.store'
 
 export function TimelineFeed() {
-  const user = useAuthStore((s) => s.user)
-  const { hasNewTweets, refreshTimeline } = useTimelineUpdates()
-  const loadMoreRef = useRef<HTMLDivElement>(null)
-
   const {
-    data,
+    user,
+    hasNewTweets,
+    refreshTimeline,
+    tweets,
+    loadMoreRef,
     isLoading,
     isError,
     error,
     refetch,
-    fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetTimeline()
-
-  const tweets = data?.pages.flatMap((page) => page.items) ?? []
-
-  useEffect(() => {
-    const node = loadMoreRef.current
-    if (!node || !hasNextPage || isFetchingNextPage) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void fetchNextPage()
-        }
-      },
-      { rootMargin: '240px' },
-    )
-
-    observer.observe(node)
-
-    return () => observer.disconnect()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+  } = useTimelineFeed()
 
   if (isLoading) {
     return (

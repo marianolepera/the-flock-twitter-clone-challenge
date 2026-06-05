@@ -1,13 +1,6 @@
-import { type FormEvent, useState } from 'react'
-
 import { Button } from '@/components/atoms/Button'
 import { Spinner } from '@/components/atoms/Spinner'
-import {
-  BIO_MAX_LENGTH,
-  validateBio,
-} from '@/features/users/validation'
-import { useUpdateProfile } from '@/hooks/users/useUpdateProfile/useUpdateProfile'
-import { formatApiError } from '@/lib/format-api-error'
+import { useEditProfileBio } from '@/features/users/hooks/useEditProfileBio'
 import { cn } from '@/lib/cn'
 import type { User } from '@/types/api.types'
 
@@ -16,52 +9,20 @@ export interface EditProfileBioProps {
 }
 
 export function EditProfileBio({ user }: EditProfileBioProps) {
-  const updateMutation = useUpdateProfile()
-
-  const [isEditing, setIsEditing] = useState(false)
-  const [bio, setBio] = useState(user.bio)
-  const [fieldError, setFieldError] = useState<string | null>(null)
-
-  const remaining = BIO_MAX_LENGTH - bio.length
-  const isOverLimit = remaining < 0
-  const hasChanges = bio !== user.bio
-
-  function openEditor() {
-    setBio(user.bio)
-    setFieldError(null)
-    setIsEditing(true)
-  }
-
-  function handleCancel() {
-    setBio(user.bio)
-    setFieldError(null)
-    setIsEditing(false)
-  }
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-
-    const validationError = validateBio(bio)
-    if (validationError) {
-      setFieldError(validationError)
-      return
-    }
-
-    setFieldError(null)
-    updateMutation.mutate(
-      {
-        username: user.username,
-        payload: { bio: bio.trim() },
-      },
-      {
-        onSuccess: () => setIsEditing(false),
-      },
-    )
-  }
-
-  const apiError = updateMutation.isError
-    ? formatApiError(updateMutation.error, 'Could not update profile')
-    : null
+  const {
+    isEditing,
+    bio,
+    setBio,
+    fieldError,
+    apiError,
+    remaining,
+    isOverLimit,
+    hasChanges,
+    isPending,
+    openEditor,
+    handleCancel,
+    handleSubmit,
+  } = useEditProfileBio(user)
 
   if (!isEditing) {
     return (
@@ -95,7 +56,7 @@ export function EditProfileBio({ user }: EditProfileBioProps) {
         rows={3}
         value={bio}
         onChange={(event) => setBio(event.target.value)}
-        disabled={updateMutation.isPending}
+        disabled={isPending}
         placeholder="Tell people about yourself"
         className={cn(
           'w-full resize-none rounded-md border border-border-strong bg-transparent px-3 py-2 text-sm text-foreground outline-none',
@@ -119,7 +80,7 @@ export function EditProfileBio({ user }: EditProfileBioProps) {
             variant="ghost"
             size="sm"
             className="cursor-pointer"
-            disabled={updateMutation.isPending}
+            disabled={isPending}
             onClick={handleCancel}
           >
             Cancel
@@ -129,11 +90,9 @@ export function EditProfileBio({ user }: EditProfileBioProps) {
             variant="primary"
             size="sm"
             className="cursor-pointer"
-            disabled={
-              updateMutation.isPending || !hasChanges || isOverLimit
-            }
+            disabled={isPending || !hasChanges || isOverLimit}
           >
-            {updateMutation.isPending ? (
+            {isPending ? (
               <Spinner size="sm" label="Saving bio" />
             ) : (
               'Save'

@@ -51,6 +51,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 60s
+    volumes:
+      - uploads_data:/app/uploads
 
   frontend:
     build:
@@ -66,3 +68,4 @@ services:
 
 volumes:
   the_flock_pgdata:
+  uploads_data:

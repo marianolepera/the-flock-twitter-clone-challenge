@@ -2,71 +2,18 @@ import { Heart, MessageCircle, UserPlus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { Avatar } from '@/components/atoms/Avatar'
-import { useMarkNotificationRead } from '@/hooks/notifications/useMarkNotificationRead/useMarkNotificationRead'
+import { useNotificationItem } from '@/features/notifications/hooks/useNotificationItem'
 import { formatRelativeTime } from '@/lib/format-relative-time'
 import { cn } from '@/lib/cn'
-import { paths } from '@/routes/paths'
 import type { Notification } from '@/types/api.types'
 
 export interface NotificationItemProps {
   notification: Notification
 }
 
-function notificationMessage(notification: Notification) {
-  if (notification.type === 'follow') {
-    return (
-      <>
-        <span className="font-bold text-foreground">
-          @{notification.actor.username}
-        </span>{' '}
-        followed you
-      </>
-    )
-  }
-
-  if (notification.type === 'reply') {
-    return (
-      <>
-        <span className="font-bold text-foreground">
-          @{notification.actor.username}
-        </span>{' '}
-        replied to your tweet
-      </>
-    )
-  }
-
-  return (
-    <>
-      <span className="font-bold text-foreground">
-        @{notification.actor.username}
-      </span>{' '}
-      liked your tweet
-    </>
-  )
-}
-
-function notificationHref(notification: Notification) {
-  if (notification.type === 'follow') {
-    return paths.profile(notification.actor.username)
-  }
-
-  if (notification.tweet) {
-    return paths.tweet(notification.tweet.id)
-  }
-
-  return paths.profile(notification.actor.username)
-}
-
 export function NotificationItem({ notification }: NotificationItemProps) {
-  const { mutate: markAsRead } = useMarkNotificationRead()
-  const isUnread = notification.readAt === null
-  const href = notificationHref(notification)
-
-  function handleClick() {
-    if (!isUnread) return
-
-    markAsRead(notification.id)
-  }
+  const { isUnread, href, handleClick, message } =
+    useNotificationItem(notification)
 
   return (
     <article
@@ -117,7 +64,10 @@ export function NotificationItem({ notification }: NotificationItemProps) {
               isUnread ? 'text-foreground' : 'text-muted',
             )}
           >
-            {notificationMessage(notification)}
+            <span className="font-bold text-foreground">
+              @{message.actorUsername}
+            </span>{' '}
+            {message.action}
           </p>
           <time
             className="mt-1 block text-sm text-muted"

@@ -1,44 +1,20 @@
-import { useEffect, useRef } from 'react'
-
 import { NotificationItem } from '@/features/notifications/components/NotificationItem'
 import { NotificationItemSkeleton } from '@/features/notifications/components/NotificationItemSkeleton'
+import { useNotificationsFeed } from '@/features/notifications/hooks/useNotificationsFeed'
 import { Button } from '@/components/atoms/Button'
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
-import { useGetNotifications } from '@/hooks/notifications/useGetNotifications/useGetNotifications'
 import { formatApiError } from '@/lib/format-api-error'
 
 export function NotificationsFeed() {
-  const loadMoreRef = useRef<HTMLDivElement>(null)
-
   const {
-    data,
+    notifications,
+    loadMoreRef,
     isLoading,
     isError,
     error,
     refetch,
-    fetchNextPage,
-    hasNextPage,
     isFetchingNextPage,
-  } = useGetNotifications()
-
-  const notifications = data?.pages.flatMap((page) => page.items) ?? []
-
-  useEffect(() => {
-    const node = loadMoreRef.current
-    if (!node || !hasNextPage || isFetchingNextPage) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void fetchNextPage()
-        }
-      },
-      { rootMargin: '240px' },
-    )
-
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+  } = useNotificationsFeed()
 
   if (isLoading) {
     return (
