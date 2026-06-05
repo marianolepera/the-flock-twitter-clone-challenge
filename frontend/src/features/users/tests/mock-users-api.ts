@@ -5,8 +5,6 @@ import { mockAuthResponse } from '@/features/auth/tests/fixtures'
 import { mockTweet } from '@/features/tweets/tests/fixtures'
 import { mockBobUser } from '@/features/users/tests/fixtures'
 
-const emptyPage = { items: [], total: 0, page: 1, limit: 20 }
-
 vi.mock('@/api/users/users-api', () => ({
   followUser: vi.fn(async () => ({ following: true })),
   unfollowUser: vi.fn(async () => {}),
@@ -34,7 +32,6 @@ vi.mock('@/api/users/users-api', () => ({
     bio: payload.bio ?? mockAuthResponse.user.bio,
   })),
   getProfile: vi.fn(async () => mockAuthResponse.user),
-  getUsers: vi.fn(async () => emptyPage),
 }))
 
 export function throwUsersApiError(status: number, message: string): never {

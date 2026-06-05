@@ -332,7 +332,7 @@ Base: `http://localhost:3000`. Public routes: `GET /health`, `POST /auth/*`. Eve
 | Area | Main routes |
 |------|-------------|
 | Auth | `POST /auth/register`, `login`, `refresh`, `logout` |
-| Users | `GET /users`, `search`, `:username`, followers, following, tweets; `PATCH :username` |
+| Users | `GET /users/search`, `:username`, followers, following, tweets; `PATCH :username` |
 | Tweets | `POST /tweets`, `DELETE /tweets/:id`, like/unlike |
 | Timeline | `GET /timeline?limit=&cursor=` |
 | Notifications | `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/read` |
@@ -419,7 +419,7 @@ See [backend/README.md](./backend/README.md#known-limitations).
 
 - No tweet **images** or **reply threads**.
 - User search by **username** and **email** (no separate display name).
-- Profiles and `/users` listings require JWT.
+- Profiles and user search require JWT.
 - Real-time is **push + manual refresh** on the timeline (not live insertion of tweets in the list).
 
 ---
