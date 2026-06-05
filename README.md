@@ -151,7 +151,6 @@ Full list with comments: **`.env.example`**.
 ### Trade-offs
 
 
-|----------|--------|---------------------|--------|
 | Timeline paging | Cursor | Offset | Stable pages when new tweets arrive; no duplicate/skipped rows on scroll. |
 | Real-time feed | Socket push + refetch banner | Insert tweets live in the list | Simpler cache/scroll behavior; avoids reordering and duplicate keys in React Query. |
 | Image storage | Local disk (`uploads/`) |
