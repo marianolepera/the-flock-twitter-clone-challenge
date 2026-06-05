@@ -1,12 +1,8 @@
 import { Avatar } from '@/components/atoms/Avatar'
 import { EditProfileBio } from '@/features/users/components/EditProfileBio'
 import { FollowButton } from '@/features/users/components/FollowButton'
-import { useGetFollowersCount } from '@/hooks/users/useGetFollowersCount/useGetFollowersCount'
-import { useGetFollowingCount } from '@/hooks/users/useGetFollowingCount/useGetFollowingCount'
-import { useGetUserTweetsCount } from '@/hooks/tweets/useGetUserTweetsCount/useGetUserTweetsCount'
-import { useIsFollowing } from '@/hooks/users/useIsFollowing/useIsFollowing'
+import { useProfileHeader } from '@/features/users/hooks/useProfileHeader'
 import { cn } from '@/lib/cn'
-import { useAuthStore } from '@/stores/auth.store'
 import type { User } from '@/types/api.types'
 
 export type ProfileTab = 'tweets' | 'followers' | 'following'
@@ -50,15 +46,14 @@ export function ProfileHeader({
   activeTab,
   onTabChange,
 }: ProfileHeaderProps) {
-  const currentUser = useAuthStore((s) => s.user)
-  const isSelf = currentUser?.id === user.id
-
-  const { isFollowing, isLoading: isFollowingLoading } = useIsFollowing(
-    user.username,
-  )
-  const { data: followersCount = 0 } = useGetFollowersCount(user.username)
-  const { data: followingCount = 0 } = useGetFollowingCount(user.username)
-  const { data: tweetsCount = 0 } = useGetUserTweetsCount(user.username)
+  const {
+    isSelf,
+    isFollowing,
+    isFollowingLoading,
+    followersCount,
+    followingCount,
+    tweetsCount,
+  } = useProfileHeader(user)
 
   return (
     <header className="border-b border-border px-4 py-4">

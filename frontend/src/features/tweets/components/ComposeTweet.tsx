@@ -1,17 +1,10 @@
-import { type FormEvent, useState } from 'react'
+import { ImagePlus, X } from 'lucide-react'
 
 import { Avatar } from '@/components/atoms/Avatar'
 import { Button } from '@/components/atoms/Button'
 import { Spinner } from '@/components/atoms/Spinner'
-import { useCreateTweet } from '@/hooks/tweets/useCreateTweet/useCreateTweet'
-import {
-  TWEET_MAX_LENGTH,
-  validateTweetContent,
-} from '@/features/tweets/validation'
-import { formatApiError } from '@/lib/format-api-error'
-import { isTweetNotFoundError } from '@/lib/tweet-errors'
+import { useComposeTweet } from '@/features/tweets/hooks/useComposeTweet'
 import { cn } from '@/lib/cn'
-import { useAuthStore } from '@/stores/auth.store'
 
 export interface ComposeTweetProps {
   parentTweetId?: string
@@ -28,46 +21,23 @@ export function ComposeTweet({
   fieldId = 'compose-tweet',
   onTweetNotFound,
 }: ComposeTweetProps) {
-  const user = useAuthStore((s) => s.user)
-  const createMutation = useCreateTweet()
-
-  const [content, setContent] = useState('')
-  const [fieldError, setFieldError] = useState<string | null>(null)
-
-  const remaining = TWEET_MAX_LENGTH - content.length
-  const isOverLimit = remaining < 0
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-
-    const validationError = validateTweetContent(content)
-    if (validationError) {
-      setFieldError(validationError)
-      return
-    }
-
-    setFieldError(null)
-    createMutation.mutate(
-      {
-        content: content.trim(),
-        ...(parentTweetId ? { parentTweetId } : {}),
-      },
-      {
-        onSuccess: () => setContent(''),
-        onError: (error) => {
-          if (parentTweetId && isTweetNotFoundError(error)) {
-            onTweetNotFound?.()
-          }
-        },
-      },
-    )
-  }
-
-  const apiError =
-    createMutation.isError &&
-    !(parentTweetId && isTweetNotFoundError(createMutation.error))
-      ? formatApiError(createMutation.error, 'Could not post tweet')
-      : null
+  const {
+    user,
+    fileInputRef,
+    content,
+    setContent,
+    fieldError,
+    apiError,
+    imagePreviewUrl,
+    remaining,
+    isOverLimit,
+    canSubmit,
+    isPending,
+    handleImageSelect,
+    handleRemoveImage,
+    openFilePicker,
+    handleSubmit,
+  } = useComposeTweet({ parentTweetId, onTweetNotFound })
 
   return (
     <form
@@ -94,39 +64,85 @@ export function ComposeTweet({
             placeholder={placeholder}
             value={content}
             onChange={(event) => setContent(event.target.value)}
-            disabled={createMutation.isPending}
+            disabled={isPending}
             className={cn(
               'w-full resize-none bg-transparent text-lg text-foreground outline-none',
               'placeholder:text-subtle',
             )}
           />
 
-          <div className="mt-3 flex items-center justify-end gap-3 border-t border-border pt-3">
-            <span
-              className={cn(
-                'text-sm tabular-nums',
-                isOverLimit ? 'text-danger' : 'text-muted',
-              )}
-              aria-live="polite"
-            >
-              {remaining}
-            </span>
+          {imagePreviewUrl ? (
+            <div className="relative mt-3 inline-block max-w-full">
+              <img
+                src={imagePreviewUrl}
+                alt="Selected image preview"
+                className="max-h-80 rounded-xl border border-border object-cover"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                disabled={isPending}
+                className={cn(
+                  'absolute top-2 right-2 rounded-full bg-background/90 p-1.5 text-foreground',
+                  'hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+                )}
+                aria-label="Remove image"
+              >
+                <X className="size-4" aria-hidden />
+              </button>
+            </div>
+          ) : null}
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              pill
-              disabled={
-                createMutation.isPending || !content.trim() || isOverLimit
-              }
-            >
-              {createMutation.isPending ? (
-                <Spinner size="sm" label="Posting tweet" />
-              ) : (
-                submitLabel
-              )}
-            </Button>
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={handleImageSelect}
+                aria-label="Add image"
+              />
+              <button
+                type="button"
+                onClick={openFilePicker}
+                disabled={isPending}
+                className={cn(
+                  'inline-flex cursor-pointer items-center justify-center rounded-full p-2 text-brand',
+                  'hover:bg-brand-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+                  'disabled:cursor-not-allowed disabled:opacity-50',
+                )}
+                aria-label="Add image"
+              >
+                <ImagePlus className="size-5" aria-hidden />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span
+                className={cn(
+                  'text-sm tabular-nums',
+                  isOverLimit ? 'text-danger' : 'text-muted',
+                )}
+                aria-live="polite"
+              >
+                {remaining}
+              </span>
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                pill
+                disabled={isPending || !canSubmit || isOverLimit}
+              >
+                {isPending ? (
+                  <Spinner size="sm" label="Posting tweet" />
+                ) : (
+                  submitLabel
+                )}
+              </Button>
+            </div>
           </div>
 
           {fieldError || apiError ? (

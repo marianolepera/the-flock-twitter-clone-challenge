@@ -23,6 +23,13 @@ export type NotificationResponse = {
   createdAt: Date;
 };
 
+export type CreateNotificationInput = {
+  recipientId: string;
+  actorId: string;
+  type: NotificationType;
+  tweetId?: string | null;
+};
+
 @Injectable()
 export class NotificationsService {
   constructor(
@@ -31,12 +38,7 @@ export class NotificationsService {
     private readonly eventsGateway: EventsGateway,
   ) {}
 
-  async create(params: {
-    recipientId: string;
-    actorId: string;
-    type: NotificationType;
-    tweetId?: string | null;
-  }): Promise<void> {
+  async create(params: CreateNotificationInput): Promise<void> {
     if (params.recipientId === params.actorId) return;
 
     const notification = this.notificationRepository.create({
@@ -62,6 +64,19 @@ export class NotificationsService {
         this.toResponse(full),
       );
     }
+  }
+
+  async createReplyNotification(
+    recipientId: string,
+    actorId: string,
+    tweetId: string,
+  ): Promise<void> {
+    await this.create({
+      recipientId,
+      actorId,
+      type: NotificationType.REPLY,
+      tweetId,
+    });
   }
 
   async findAll(recipientId: string, page = 1, limit = 20) {

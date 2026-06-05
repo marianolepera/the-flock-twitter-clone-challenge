@@ -1,9 +1,17 @@
+import { join } from 'node:path';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import { ensureUploadsDir } from './tweets/tweet-media.storage';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  ensureUploadsDir();
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
   const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
   app.enableCors({

@@ -27,4 +27,16 @@ describe('Snackbar', () => {
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
+
+  it('renders error variant with alert role', () => {
+    useSnackbarStore
+      .getState()
+      .show('Image must be 5 MB or smaller', 'error')
+
+    render(<Snackbar />)
+
+    const alert = screen.getByRole('alert')
+    expect(alert).toHaveTextContent('Image must be 5 MB or smaller')
+    expect(alert).toHaveClass('border-danger')
+  })
 })

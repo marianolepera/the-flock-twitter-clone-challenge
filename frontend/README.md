@@ -63,6 +63,27 @@ Connection runs only while the user is logged in; `disconnectSocket()` runs on l
 
 See also: [root README — Bonus features](../README.md#bonus-features-challenge) and [backend WebSockets](../backend/README.md#websockets-socketio).
 
+## Image uploads
+
+Optional image attachment when composing a tweet (Home, profile, thread reply).
+
+| Item | Detail |
+|------|--------|
+| UI | Image button in `ComposeTweet`; preview with remove (✕) before posting |
+| Validation | Client-side: images only, max **5 MB** (oversized files → red error snackbar) |
+| API | `createTweet()` sends `FormData` when an image is selected; otherwise JSON |
+| Display | `TweetCard` renders `imageUrl` via `mediaUrl()` in `src/lib/api-url.ts` |
+| Rules | One image per tweet; tweet can be text-only, image-only, or both |
+
+**Code layout**
+
+| Path | Role |
+|------|------|
+| `src/features/tweets/components/ComposeTweet.tsx` | File input, preview, submit with optional `image` |
+| `src/features/tweets/components/TweetCard.tsx` | Renders tweet image below text |
+| `src/api/tweets/tweets-api.ts` | `FormData` vs JSON for `POST /tweets` |
+| `src/lib/api-url.ts` | `mediaUrl()` — builds full URL from stored path |
+
 ## Scripts
 
 | Command | Description |
@@ -78,7 +99,7 @@ See also: [root README — Bonus features](../README.md#bonus-features-challenge
 
 ### Testing
 
-**Vitest + React Testing Library** (`src/**/*.test.ts(x)`): auth, tweets, timeline, search, profile, follow, notifications, layouts, atoms, API modules, hooks, and utilities (67 tests).
+**Vitest + React Testing Library** (`src/**/*.test.ts(x)`): auth, tweets, timeline, search, profile, follow, notifications, image uploads, layouts, atoms, API modules, hooks, and utilities.
 
 **Playwright E2E** (`e2e/`): real login, compose tweet, follow from search, notifications. Prerequisites:
 

@@ -1,44 +1,25 @@
-import { type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/atoms/Button'
 import { Input } from '@/components/atoms/Input'
 import { Spinner } from '@/components/atoms/Spinner'
-import { useRegister } from '@/hooks/auth/useRegister/useRegister'
-import { PASSWORD_HINT, validateRegisterForm } from '@/features/auth/validation'
-import { formatApiError } from '@/lib/format-api-error'
+import { PASSWORD_HINT } from '@/features/auth/validation'
+import { useRegisterForm } from '@/features/auth/hooks/useRegisterForm'
 import { paths } from '@/routes/paths'
 
 export function RegisterForm() {
-  const navigate = useNavigate()
-  const registerMutation = useRegister()
-
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    const errors = validateRegisterForm({ email, username, password })
-    setFieldErrors(errors)
-    if (Object.keys(errors).length > 0) return
-
-    registerMutation.mutate(
-      {
-        email: email.trim(),
-        username: username.trim(),
-        password,
-      },
-      {
-        onSuccess: () => navigate(paths.home, { replace: true }),
-      },
-    )
-  }
-
-  const apiError = registerMutation.isError
-    ? formatApiError(registerMutation.error, 'Could not create account')
-    : null
+  const {
+    email,
+    setEmail,
+    username,
+    setUsername,
+    password,
+    setPassword,
+    fieldErrors,
+    apiError,
+    isPending,
+    handleSubmit,
+  } = useRegisterForm()
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
@@ -50,7 +31,7 @@ export function RegisterForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         error={fieldErrors.email}
-        disabled={registerMutation.isPending}
+        disabled={isPending}
       />
       <Input
         label="Username"
@@ -61,7 +42,7 @@ export function RegisterForm() {
         onChange={(e) => setUsername(e.target.value)}
         error={fieldErrors.username}
         hint="3–30 characters; letters, numbers, underscores"
-        disabled={registerMutation.isPending}
+        disabled={isPending}
       />
       <Input
         label="Password"
@@ -72,7 +53,7 @@ export function RegisterForm() {
         onChange={(e) => setPassword(e.target.value)}
         error={fieldErrors.password}
         hint={PASSWORD_HINT}
-        disabled={registerMutation.isPending}
+        disabled={isPending}
       />
 
       {apiError ? (
@@ -87,9 +68,9 @@ export function RegisterForm() {
         size="lg"
         fullWidth
         pill
-        disabled={registerMutation.isPending}
+        disabled={isPending}
       >
-        {registerMutation.isPending ? (
+        {isPending ? (
           <Spinner size="sm" label="Creating account" />
         ) : (
           'Sign up'

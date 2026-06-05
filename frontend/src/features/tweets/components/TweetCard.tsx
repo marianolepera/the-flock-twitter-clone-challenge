@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom'
 
 import { Avatar } from '@/components/atoms/Avatar'
 import { Button } from '@/components/atoms/Button'
-import { useDeleteTweet } from '@/hooks/tweets/useDeleteTweet/useDeleteTweet'
-import { useLikeTweet } from '@/hooks/tweets/useLikeTweet/useLikeTweet'
-import { useUnlikeTweet } from '@/hooks/tweets/useUnlikeTweet/useUnlikeTweet'
+import { useTweetCardActions } from '@/features/tweets/hooks/useTweetCardActions'
+import { mediaUrl } from '@/lib/api-url'
 import { formatRelativeTime } from '@/lib/format-relative-time'
 import { cn } from '@/lib/cn'
 import { paths } from '@/routes/paths'
@@ -24,37 +23,13 @@ export function TweetCard({
   showReplyButton = true,
   onDeleted,
 }: TweetCardProps) {
-  const likeMutation = useLikeTweet()
-  const unlikeMutation = useUnlikeTweet()
-  const deleteMutation = useDeleteTweet()
-
   const isOwn = currentUserId === tweet.authorId
-  const isLikePendingForTweet =
-    (likeMutation.isPending && likeMutation.variables === tweet.id) ||
-    (unlikeMutation.isPending && unlikeMutation.variables === tweet.id)
-  const isDeletePendingForTweet =
-    deleteMutation.isPending && deleteMutation.variables === tweet.id
-
-  function handleLikeToggle() {
-    if (isLikePendingForTweet) return
-
-    if (tweet.likedByMe) {
-      unlikeMutation.mutate(tweet.id)
-      return
-    }
-
-    likeMutation.mutate(tweet.id)
-  }
-
-  function handleDelete() {
-    if (isDeletePendingForTweet) return
-
-    deleteMutation.mutate(tweet.id, {
-      onSuccess: () => {
-        onDeleted?.()
-      },
-    })
-  }
+  const {
+    isLikePendingForTweet,
+    isDeletePendingForTweet,
+    handleLikeToggle,
+    handleDelete,
+  } = useTweetCardActions({ tweet, onDeleted })
 
   return (
     <article className="border-b border-border px-4 py-3">
@@ -93,6 +68,14 @@ export function TweetCard({
           <p className="mt-1 whitespace-pre-wrap break-words text-foreground">
             {tweet.content}
           </p>
+
+          {tweet.imageUrl ? (
+            <img
+              src={mediaUrl(tweet.imageUrl) ?? undefined}
+              alt="Tweet image"
+              className="mt-2 max-h-80 w-full rounded-xl object-cover"
+            />
+          ) : null}
 
           <footer className="mt-3 flex items-center gap-2">
             <button

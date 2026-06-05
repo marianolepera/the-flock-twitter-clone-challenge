@@ -2,12 +2,37 @@ import { apiClient } from '@/api/client'
 import type { Tweet, TweetThreadResponse } from '@/types/api.types'
 
 export interface CreateTweetPayload {
-  content: string
+  content?: string
   parentTweetId?: string
+  image?: File
 }
 
 export async function createTweet(payload: CreateTweetPayload) {
-  const { data } = await apiClient.post<Tweet>('/tweets', payload)
+  if (payload.image) {
+    const form = new FormData()
+
+    if (payload.content?.trim()) {
+      form.append('content', payload.content.trim())
+    }
+
+    form.append('image', payload.image)
+
+    if (payload.parentTweetId) {
+      form.append('parentTweetId', payload.parentTweetId)
+    }
+
+    const { data } = await apiClient.post<Tweet>('/tweets', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    return data
+  }
+
+  const { data } = await apiClient.post<Tweet>('/tweets', {
+    content: payload.content?.trim() ?? '',
+    ...(payload.parentTweetId ? { parentTweetId: payload.parentTweetId } : {}),
+  })
+
   return data
 }
 

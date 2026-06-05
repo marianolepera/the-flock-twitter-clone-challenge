@@ -1,51 +1,26 @@
-import { useEffect, useRef } from 'react'
-
 import { Button } from '@/components/atoms/Button'
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { TweetCard } from '@/features/tweets/components/TweetCard'
 import { TweetCardSkeleton } from '@/features/tweets/components/TweetCardSkeleton'
-import { useGetUserTweets } from '@/hooks/tweets/useGetUserTweets/useGetUserTweets'
+import { useUserTweetsFeed } from '@/features/users/hooks/useUserTweetsFeed'
 import { formatApiError } from '@/lib/format-api-error'
-import { useAuthStore } from '@/stores/auth.store'
 
 export interface UserTweetsFeedProps {
   username: string
 }
 
 export function UserTweetsFeed({ username }: UserTweetsFeedProps) {
-  const currentUser = useAuthStore((s) => s.user)
-  const loadMoreRef = useRef<HTMLDivElement>(null)
-
   const {
-    data,
+    currentUser,
+    tweets,
+    loadMoreRef,
     isLoading,
     isError,
     error,
     refetch,
-    fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetUserTweets(username)
-
-  const tweets = data?.pages.flatMap((page) => page.items) ?? []
-
-  useEffect(() => {
-    const node = loadMoreRef.current
-    if (!node || !hasNextPage || isFetchingNextPage) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void fetchNextPage()
-        }
-      },
-      { rootMargin: '240px' },
-    )
-
-    observer.observe(node)
-
-    return () => observer.disconnect()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+  } = useUserTweetsFeed(username)
 
   if (isLoading) {
     return (

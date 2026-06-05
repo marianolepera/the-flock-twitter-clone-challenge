@@ -33,6 +33,25 @@ describe('tweets-api', () => {
     expect(apiClient.post).toHaveBeenCalledWith('/tweets', { content: 'Hi' })
   })
 
+  it('createTweet sends FormData when an image is present', async () => {
+    const tweet = { id: 't1', content: 'Hi', imageUrl: '/uploads/a.jpg' }
+    const image = new File(['image-bytes'], 'photo.png', { type: 'image/png' })
+
+    vi.mocked(apiClient.post).mockResolvedValue({ data: tweet })
+
+    await expect(
+      createTweet({ content: 'Hi', image }),
+    ).resolves.toEqual(tweet)
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/tweets',
+      expect.any(FormData),
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    )
+  })
+
   it('deleteTweet calls DELETE /tweets/:id', async () => {
     vi.mocked(apiClient.delete).mockResolvedValue({})
 

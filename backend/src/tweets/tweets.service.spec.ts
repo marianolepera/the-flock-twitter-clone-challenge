@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
@@ -11,6 +12,10 @@ import { EventsGateway } from '../events/events.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TweetsService } from './tweets.service';
 
+jest.mock('./tweet-media.storage', () => ({
+  saveTweetImage: jest.fn(() => '/uploads/test-image.jpg'),
+}));
+
 type MockRepo<T extends object> = Partial<
   Record<keyof Repository<T>, jest.Mock>
 >;
@@ -18,6 +23,7 @@ type MockRepo<T extends object> = Partial<
 function mockRepo<T extends object>(): MockRepo<T> {
   return {
     findOne: jest.fn(),
+    findOneBy: jest.fn(),
     findAndCount: jest.fn(),
     find: jest.fn(),
     create: jest.fn(),
@@ -40,6 +46,7 @@ describe('TweetsService', () => {
   let likeRepo: MockRepo<Like>;
   let userRepo: MockRepo<User>;
   let createNotification: jest.Mock;
+  let createReplyNotification: jest.Mock;
   let emitTimelineNewTweet: jest.Mock;
   let notificationsService: NotificationsService;
   let eventsGateway: EventsGateway;
@@ -49,9 +56,11 @@ describe('TweetsService', () => {
     likeRepo = mockRepo<Like>();
     userRepo = mockRepo<User>();
     createNotification = jest.fn().mockResolvedValue(undefined);
+    createReplyNotification = jest.fn().mockResolvedValue(undefined);
     emitTimelineNewTweet = jest.fn().mockResolvedValue(undefined);
     notificationsService = {
       create: createNotification,
+      createReplyNotification,
     } as unknown as NotificationsService;
     eventsGateway = {
       emitTimelineNewTweet,
@@ -87,12 +96,47 @@ describe('TweetsService', () => {
       likedByMe: false,
       repliesCount: 0,
       parentTweetId: null,
+      imageUrl: null,
       author: authorSummary,
     });
 
     expect(emitTimelineNewTweet).toHaveBeenCalledWith(
       'u1',
       expect.objectContaining({ id: 't1', authorId: 'u1' }),
+    );
+  });
+
+  it('create saves imageUrl when a file is uploaded', async () => {
+    (userRepo.findOne as jest.Mock).mockResolvedValue(authorSummary);
+    (tweetRepo.create as jest.Mock).mockImplementation((x) => x);
+    (tweetRepo.save as jest.Mock).mockImplementation((t) =>
+      Promise.resolve({
+        ...t,
+        id: 't2',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    );
+
+    await expect(
+      service.create(
+        'u1',
+        { content: 'Photo tweet' },
+        {
+          buffer: Buffer.from('fake-image'),
+          mimetype: 'image/png',
+        },
+      ),
+    ).resolves.toMatchObject({
+      id: 't2',
+      content: 'Photo tweet',
+      imageUrl: '/uploads/test-image.jpg',
+    });
+  });
+
+  it('create throws BadRequestException when content and image are missing', async () => {
+    await expect(service.create('u1', {})).rejects.toBeInstanceOf(
+      BadRequestException,
     );
   });
 
@@ -169,6 +213,7 @@ describe('TweetsService', () => {
       },
       likes: [],
       parentTweetId: null,
+      imageUrl: null,
       parent: null,
       replies: [],
       createdAt: new Date('2024-01-01'),
@@ -292,6 +337,7 @@ describe('TweetsService', () => {
       },
       likes: [],
       parentTweetId: null,
+      imageUrl: null,
       parent: null,
       replies: [],
       createdAt: new Date('2024-01-01'),

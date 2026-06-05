@@ -8,16 +8,22 @@ import {
   Param,
   Post,
   Request,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import { CreateTweetDto } from './dto/create-tweet.dto';
 import { TweetsService } from './tweets.service';
+import type { UploadedTweetImage } from './tweet-media.storage';
 
 interface AuthRequest extends Request {
   user: User;
 }
+
+const IMAGE_MIME_PATTERN = /^image\/(jpeg|png|gif|webp)$/;
 
 @Controller('tweets')
 @UseGuards(JwtAuthGuard)
@@ -26,8 +32,20 @@ export class TweetsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Request() req: AuthRequest, @Body() dto: CreateTweetDto) {
-    return this.tweetsService.create(req.user.id, dto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, callback) => {
+        callback(null, IMAGE_MIME_PATTERN.test(file.mimetype));
+      },
+    }),
+  )
+  create(
+    @Request() req: AuthRequest,
+    @Body() dto: CreateTweetDto,
+    @UploadedFile() file?: UploadedTweetImage,
+  ) {
+    return this.tweetsService.create(req.user.id, dto, file);
   }
 
   @Get(':id/thread')

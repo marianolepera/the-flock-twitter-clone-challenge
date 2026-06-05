@@ -333,7 +333,8 @@ Base: `http://localhost:3000`. Public routes: `GET /health`, `POST /auth/*`. Eve
 |------|-------------|
 | Auth | `POST /auth/register`, `login`, `refresh`, `logout` |
 | Users | `GET /users/search`, `:username`, followers, following, tweets; `PATCH :username` |
-| Tweets | `POST /tweets`, `DELETE /tweets/:id`, like/unlike |
+| Tweets | `POST /tweets` (JSON or multipart with image), `DELETE /tweets/:id`, like/unlike, `GET /tweets/:id/thread` |
+| Media | `GET /uploads/:filename` (public static files) |
 | Timeline | `GET /timeline?limit=&cursor=` |
 | Notifications | `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/read` |
 
@@ -350,8 +351,18 @@ Full reference: **[backend/README.md](./backend/README.md)**.
 | **Notifications** | Done | REST inbox + unread badge + mark-all-read button |
 | **Real-time (WebSockets)** | Done | [Socket.IO](https://socket.io/) timeline + notification push |
 | **Reply threads** | Done | Reply to tweets, thread page at `/tweets/:id`, reply notifications |
+| **Image uploads** | Done | Optional image per tweet (local disk, 5 MB max) |
 
 
+
+### Image uploads
+
+- **Backend:** `POST /tweets` accepts `multipart/form-data` with optional `content` and `image` (JPEG, PNG, GIF, WebP, max **5 MB**). Files are stored on disk under `uploads/` and served at `GET /uploads/:filename`. The DB stores `imageUrl` (e.g. `/uploads/<uuid>.jpg`).
+- **Docker:** named volume `uploads_data` mounted at `/app/uploads` so files survive container restarts.
+- **Frontend:** image picker + preview in the compose box; images render in the timeline and thread views. Oversized files show an **error toast** (red snackbar).
+- **Limits:** one image per tweet; text-only, image-only, or text + image are all valid.
+
+Details: **[backend/README.md — Tweets](./backend/README.md#tweets)** and **[frontend/README.md — Image uploads](./frontend/README.md#image-uploads)**.
 
 ### Notifications
 
@@ -420,6 +431,7 @@ See [backend/README.md](./backend/README.md#known-limitations).
 - User search by **username** and **email** (no separate display name).
 - Profiles and user search require JWT.
 - Real-time is **push + manual refresh** on the timeline (not live insertion of tweets in the list).
+- Tweet images are stored on **local disk** ; one image per tweet, max **5 MB**.
 
 ---
 

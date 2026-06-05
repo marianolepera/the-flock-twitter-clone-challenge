@@ -1,44 +1,22 @@
-import { type FormEvent, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/atoms/Button'
 import { Input } from '@/components/atoms/Input'
 import { Spinner } from '@/components/atoms/Spinner'
-import { useLogin } from '@/hooks/auth/useLogin/useLogin'
-import { validateLoginForm } from '@/features/auth/validation'
-import { formatApiError } from '@/lib/format-api-error'
+import { useLoginForm } from '@/features/auth/hooks/useLoginForm'
 import { paths } from '@/routes/paths'
 
 export function LoginForm() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const loginMutation = useLogin()
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-
-  const from =
-    (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname ?? paths.home
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    const errors = validateLoginForm({ email, password })
-    setFieldErrors(errors)
-    if (Object.keys(errors).length > 0) return
-
-    loginMutation.mutate(
-      { email: email.trim(), password },
-      {
-        onSuccess: () => navigate(from, { replace: true }),
-      },
-    )
-  }
-
-  const apiError = loginMutation.isError
-    ? formatApiError(loginMutation.error, 'Could not sign in')
-    : null
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    fieldErrors,
+    apiError,
+    isPending,
+    handleSubmit,
+  } = useLoginForm()
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
@@ -50,7 +28,7 @@ export function LoginForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         error={fieldErrors.email}
-        disabled={loginMutation.isPending}
+        disabled={isPending}
       />
       <Input
         label="Password"
@@ -60,7 +38,7 @@ export function LoginForm() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         error={fieldErrors.password}
-        disabled={loginMutation.isPending}
+        disabled={isPending}
       />
 
       {apiError ? (
@@ -75,9 +53,9 @@ export function LoginForm() {
         size="lg"
         fullWidth
         pill
-        disabled={loginMutation.isPending}
+        disabled={isPending}
       >
-        {loginMutation.isPending ? <Spinner size="sm" label="Signing in" /> : 'Sign in'}
+        {isPending ? <Spinner size="sm" label="Signing in" /> : 'Sign in'}
       </Button>
 
       <p className="text-sm text-muted">

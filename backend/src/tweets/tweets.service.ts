@@ -14,6 +14,7 @@ import { User } from '../users/entities/user.entity';
 import { CreateTweetDto } from './dto/create-tweet.dto';
 import { Like } from './entities/like.entity';
 import { Tweet } from './entities/tweet.entity';
+import { saveTweetImage, type UploadedTweetImage } from './tweet-media.storage';
 
 export type TweetAuthorSummary = Pick<User, 'id' | 'username' | 'avatarUrl'>;
 
@@ -23,6 +24,7 @@ export type TweetResponse = {
   authorId: string;
   author: TweetAuthorSummary;
   parentTweetId: string | null;
+  imageUrl: string | null;
   likesCount: number;
   likedByMe: boolean;
   repliesCount: number;
@@ -48,7 +50,17 @@ export class TweetsService {
     private readonly eventsGateway: EventsGateway,
   ) {}
 
-  async create(authorId: string, dto: CreateTweetDto): Promise<TweetResponse> {
+  async create(
+    authorId: string,
+    dto: CreateTweetDto,
+    file?: UploadedTweetImage,
+  ): Promise<TweetResponse> {
+    const content = dto.content?.trim() ?? '';
+
+    if (!content && !file) {
+      throw new BadRequestException('Tweet must have content or an image');
+    }
+
     const author = await this.userRepository.findOne({
       where: { id: authorId },
       select: { id: true, username: true, avatarUrl: true },
@@ -70,20 +82,22 @@ export class TweetsService {
       replyRecipientId = parent.authorId;
     }
 
+    const imageUrl = file ? saveTweetImage(file.buffer, file.mimetype) : null;
+
     const tweet = this.tweetRepository.create({
-      content: dto.content,
+      content,
       authorId,
       parentTweetId: rootParentId,
+      imageUrl,
     });
     const saved = await this.tweetRepository.save(tweet);
 
     if (replyRecipientId) {
-      await this.notificationsService.create({
-        recipientId: replyRecipientId,
-        actorId: authorId,
-        type: NotificationType.REPLY,
-        tweetId: saved.id,
-      });
+      await this.notificationsService.createReplyNotification(
+        replyRecipientId,
+        authorId,
+        saved.id,
+      );
     }
 
     const response = this.toTweetResponse(saved, author, 0, false, 0);
@@ -317,6 +331,7 @@ export class TweetsService {
       authorId: tweet.authorId,
       author,
       parentTweetId: tweet.parentTweetId,
+      imageUrl: tweet.imageUrl,
       likesCount,
       likedByMe,
       repliesCount,

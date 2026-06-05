@@ -133,6 +133,42 @@ describe('NotificationsService', () => {
     );
   });
 
+  it('createReplyNotification saves a reply notification with tweetId', async () => {
+    const createdAt = new Date('2024-01-01T00:00:00.000Z');
+    const saved = { id: 'n3', recipientId: 'u2', actorId: 'u1' };
+
+    (notificationRepo.create as jest.Mock).mockImplementation((x) => x);
+    (notificationRepo.save as jest.Mock).mockResolvedValue(saved);
+    (notificationRepo.findOne as jest.Mock).mockResolvedValue({
+      id: 'n3',
+      type: NotificationType.REPLY,
+      readAt: null,
+      createdAt,
+      actor: {
+        id: 'u1',
+        username: 'alice',
+        avatarUrl: 'https://example.com/a.png',
+      },
+      tweet: { id: 't1', content: 'Reply target' },
+    });
+
+    await service.createReplyNotification('u2', 'u1', 't1');
+
+    expect(notificationRepo.create).toHaveBeenCalledWith({
+      recipientId: 'u2',
+      actorId: 'u1',
+      type: NotificationType.REPLY,
+      tweetId: 't1',
+    });
+    expect(emitNotification).toHaveBeenCalledWith(
+      'u2',
+      expect.objectContaining({
+        type: NotificationType.REPLY,
+        tweet: { id: 't1', content: 'Reply target' },
+      }),
+    );
+  });
+
   it('create does not emit when loaded notification is missing', async () => {
     (notificationRepo.create as jest.Mock).mockImplementation((x) => x);
     (notificationRepo.save as jest.Mock).mockResolvedValue({ id: 'n1' });

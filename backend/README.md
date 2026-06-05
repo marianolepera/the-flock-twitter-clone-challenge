@@ -276,6 +276,8 @@ Same as followers.
       "content": "...",
       "authorId": "uuid",
       "author": { "id", "username", "avatarUrl" },
+      "parentTweetId": null,
+      "imageUrl": null,
       "likesCount": 3,
       "likedByMe": false,
       "createdAt": "...",
@@ -296,7 +298,9 @@ All routes require JWT.
 
 #### `POST /tweets`
 
-**Body:**
+Create a tweet with **JSON** or **multipart/form-data** when attaching an image.
+
+**JSON body** (text-only):
 
 ```json
 {
@@ -305,10 +309,30 @@ All routes require JWT.
 }
 ```
 
-- `content`: 1–280 characters.
-- `parentTweetId` (optional): reply to an existing tweet. Replies are attached to the thread root and do not appear in the timeline feed.
+**Multipart form** (optional image):
 
-**Response:** `201` — tweet with `likesCount: 0`, `likedByMe: false`, `repliesCount: 0`, `parentTweetId`, embedded `author`.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `content` | string | no* | 0–280 characters |
+| `image` | file | no* | JPEG, PNG, GIF, or WebP; max **5 MB** |
+| `parentTweetId` | uuid | no | Reply to an existing tweet |
+
+\* At least one of `content` (non-empty after trim) or `image` is required.
+
+- `parentTweetId` (optional): reply to an existing tweet. Replies attach to the thread root and do not appear in the timeline feed.
+- On upload, the file is saved to `uploads/` (Docker: `/app/uploads` on volume `uploads_data`) and exposed at `/uploads/<uuid>.<ext>`.
+
+**Response:** `201` — tweet with `likesCount: 0`, `likedByMe: false`, `repliesCount: 0`, `parentTweetId`, `imageUrl` (`string | null`), embedded `author`.
+
+**Errors:** `400` empty tweet (no content and no image); `404` parent tweet not found; `413`/Multer error if image exceeds 5 MB or MIME type is not allowed.
+
+---
+
+#### `GET /uploads/:filename`
+
+**Auth:** none (public static files).
+
+Serves uploaded tweet images from the `uploads/` directory. Example: `GET /uploads/a1b2c3.jpg`.
 
 ---
 
@@ -320,7 +344,7 @@ Returns the root tweet and all replies in chronological order.
 
 ```json
 {
-  "root": { "id", "content", "author", "parentTweetId", "likesCount", "likedByMe", "repliesCount", "createdAt", "updatedAt" },
+  "root": { "id", "content", "author", "parentTweetId", "imageUrl", "likesCount", "likedByMe", "repliesCount", "createdAt", "updatedAt" },
   "replies": [ /* same shape, ordered ASC */ ]
 }
 ```
@@ -410,6 +434,8 @@ Payload: `TweetResponse` with ISO date strings:
   "content": "Hello",
   "authorId": "uuid",
   "author": { "id": "uuid", "username": "alice", "avatarUrl": "..." },
+  "parentTweetId": null,
+  "imageUrl": null,
   "likesCount": 0,
   "likedByMe": false,
   "createdAt": "2025-06-04T12:00:00.000Z",
@@ -467,7 +493,7 @@ If `hasMore` is `false`, `nextCursor` is `null`.
 | Entity | Notes |
 |--------|--------|
 | `users` | unique email and username; `passwordHash` not exposed on reads |
-| `tweets` | `content` max 280; FK `authorId` |
+| `tweets` | `content` max 280; optional `imageUrl` (path under `/uploads/`); FK `authorId`; optional `parentTweetId` for replies |
 | `follows` | unique follower/following pair |
 | `likes` | unique user/tweet pair |
 | `notifications` | `follow` \| `like`; FK `recipientId`, `actorId`, optional `tweetId`; `readAt` nullable |
@@ -516,6 +542,8 @@ The `backend` service in `docker-compose.yml` on startup:
 3. `npm run seed` (if `RUN_SEED=true`)
 4. `node dist/main.js`
 
+Uploaded images persist in the Docker volume `uploads_data` (mounted at `/app/uploads`). Local dev writes to `backend/uploads/` (gitignored).
+
 CORS is configured via `CORS_ORIGIN` (default `http://localhost:5173`).
 
 ---
@@ -525,3 +553,4 @@ CORS is configured via `CORS_ORIGIN` (default `http://localhost:5173`).
 - **Real-time:** WebSocket push + client-driven timeline refetch; tweets are not inserted live into the feed list.
 - **Search:** by `username` and `email`; no separate display name from username.
 - **Anonymous public profile:** `GET /users/:username` requires JWT.
+- **Images:** stored on **local filesystem** (`uploads/`), not object storage; **one image per tweet**, max **5 MB**; allowed types: JPEG, PNG, GIF, WebP. Deleting a tweet does not remove the file from disk.

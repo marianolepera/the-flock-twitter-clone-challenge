@@ -1,11 +1,8 @@
-import { useEffect, useRef } from 'react'
-
 import { Button } from '@/components/atoms/Button'
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { UserCard } from '@/features/users/components/UserCard'
 import { UserCardSkeleton } from '@/features/users/components/UserCardSkeleton'
-import { useGetFollowers } from '@/hooks/users/useGetFollowers/useGetFollowers'
-import { useGetFollowingList } from '@/hooks/users/useGetFollowingList/useGetFollowingList'
+import { useUserFollowList } from '@/features/users/hooks/useUserFollowList'
 import { formatApiError } from '@/lib/format-api-error'
 
 export interface UserFollowListProps {
@@ -14,35 +11,17 @@ export interface UserFollowListProps {
 }
 
 export function UserFollowList({ username, type }: UserFollowListProps) {
-  const loadMoreRef = useRef<HTMLDivElement>(null)
-
-  const followersQuery = useGetFollowers(username, type === 'followers')
-  const followingQuery = useGetFollowingList(username, type === 'following')
-
-  const query = type === 'followers' ? followersQuery : followingQuery
-  const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    query
-
-  const users = data?.pages.flatMap((page) => page.items) ?? []
-  const emptyLabel = type === 'followers' ? 'No followers yet' : 'Not following anyone yet'
-
-  useEffect(() => {
-    const node = loadMoreRef.current
-    if (!node || !hasNextPage || isFetchingNextPage) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void fetchNextPage()
-        }
-      },
-      { rootMargin: '240px' },
-    )
-
-    observer.observe(node)
-
-    return () => observer.disconnect()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+  const {
+    users,
+    emptyLabel,
+    loadMoreRef,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useUserFollowList(username, type)
 
   if (isLoading) {
     return (

@@ -35,6 +35,24 @@ describe('TweetCard', () => {
     )
   })
 
+  it('renders tweet image when imageUrl is present', () => {
+    renderWithProviders(
+      <TweetCard
+        tweet={{
+          ...mockTweet,
+          imageUrl: '/uploads/sample.jpg',
+        }}
+        currentUserId={mockAuthResponse.user.id}
+      />,
+    )
+
+    const image = screen.getByRole('img', { name: /tweet image/i })
+    expect(image).toHaveAttribute(
+      'src',
+      'http://localhost:3000/uploads/sample.jpg',
+    )
+  })
+
   it('likes a tweet when the like button is clicked', async () => {
     const user = userEvent.setup()
 

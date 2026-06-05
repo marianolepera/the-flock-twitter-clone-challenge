@@ -34,3 +34,5 @@ backend/prisma/*.db-journal
 .nyc_output/
 *.tsbuildinfo
 .eslintcache
+
+backend/uploads/
