@@ -18,7 +18,7 @@ A functional Twitter/X clone: **NestJS + PostgreSQL** (`backend/`) and **React +
 ### 1. Clone (once)
 
 ```bash
-git clone <REPO_URL>
+git clone https://github.com/marianolepera/the-flock-twitter-clone-challenge
 cd the-flock-twitter-clone-challenge
 ```
 
