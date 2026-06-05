@@ -1,11 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { EventsGateway } from '../events/events.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/entities/notification-type';
@@ -21,10 +22,17 @@ export type TweetResponse = {
   content: string;
   authorId: string;
   author: TweetAuthorSummary;
+  parentTweetId: string | null;
   likesCount: number;
   likedByMe: boolean;
+  repliesCount: number;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type TweetThreadResponse = {
+  root: TweetResponse;
+  replies: TweetResponse[];
 };
 
 @Injectable()
@@ -47,14 +55,42 @@ export class TweetsService {
     });
     if (!author) throw new NotFoundException('User not found');
 
+    let rootParentId: string | null = null;
+    let replyRecipientId: string | null = null;
+
+    const parentTweetId = dto.parentTweetId;
+    if (parentTweetId) {
+      const parent = await this.tweetRepository.findOneBy({
+        id: parentTweetId,
+      });
+      if (!parent) throw new NotFoundException('Parent tweet not found');
+
+      const rootId = await this.resolveRootTweetId(parent);
+      rootParentId = rootId;
+      replyRecipientId = parent.authorId;
+    }
+
     const tweet = this.tweetRepository.create({
       content: dto.content,
       authorId,
+      parentTweetId: rootParentId,
     });
     const saved = await this.tweetRepository.save(tweet);
 
-    const response = this.toTweetResponse(saved, author, 0, false);
-    void this.eventsGateway.emitTimelineNewTweet(authorId, response);
+    if (replyRecipientId) {
+      await this.notificationsService.create({
+        recipientId: replyRecipientId,
+        actorId: authorId,
+        type: NotificationType.REPLY,
+        tweetId: saved.id,
+      });
+    }
+
+    const response = this.toTweetResponse(saved, author, 0, false, 0);
+
+    if (!rootParentId) {
+      void this.eventsGateway.emitTimelineNewTweet(authorId, response);
+    }
 
     return response;
   }
@@ -70,6 +106,39 @@ export class TweetsService {
     }
 
     await this.tweetRepository.remove(tweet);
+  }
+
+  async getThread(
+    tweetId: string,
+    requesterId: string,
+  ): Promise<TweetThreadResponse> {
+    const tweet = await this.tweetRepository.findOne({
+      where: { id: tweetId },
+      relations: ['author'],
+    });
+    if (!tweet) throw new NotFoundException('Tweet not found');
+
+    const rootId = await this.resolveRootTweetId(tweet);
+    const root =
+      rootId === tweet.id
+        ? tweet
+        : await this.tweetRepository.findOne({
+            where: { id: rootId },
+            relations: ['author'],
+          });
+
+    if (!root) throw new NotFoundException('Tweet not found');
+
+    const replies = await this.tweetRepository.find({
+      where: { parentTweetId: root.id },
+      relations: ['author'],
+      order: { createdAt: 'ASC' },
+    });
+
+    const [mappedRoot] = await this.mapTweetsWithLikes([root], requesterId);
+    const mappedReplies = await this.mapTweetsWithLikes(replies, requesterId);
+
+    return { root: mappedRoot, replies: mappedReplies };
   }
 
   async getByUsername(
@@ -88,7 +157,7 @@ export class TweetsService {
     const skip = (page - 1) * take;
 
     const [tweets, total] = await this.tweetRepository.findAndCount({
-      where: { authorId: author.id },
+      where: { authorId: author.id, parentTweetId: IsNull() },
       relations: ['author'],
       order: { createdAt: 'DESC' },
       take,
@@ -121,9 +190,12 @@ export class TweetsService {
     });
 
     const likesCount = await this.likeRepository.count({ where: { tweetId } });
+    const repliesCount = await this.tweetRepository.count({
+      where: { parentTweetId: tweetId },
+    });
     const author = await this.getAuthorSummary(tweet.authorId);
 
-    return this.toTweetResponse(tweet, author, likesCount, true);
+    return this.toTweetResponse(tweet, author, likesCount, true, repliesCount);
   }
 
   async unlike(tweetId: string, userId: string) {
@@ -137,6 +209,25 @@ export class TweetsService {
     }
 
     await this.likeRepository.remove(existing);
+  }
+
+  private async resolveRootTweetId(tweet: Pick<Tweet, 'id' | 'parentTweetId'>) {
+    let currentId = tweet.id;
+    let parentId = tweet.parentTweetId;
+
+    while (parentId) {
+      const parent = await this.tweetRepository.findOne({
+        where: { id: parentId },
+        select: { id: true, parentTweetId: true },
+      });
+      if (!parent) {
+        throw new BadRequestException('Invalid tweet thread');
+      }
+      currentId = parent.id;
+      parentId = parent.parentTweetId;
+    }
+
+    return currentId;
   }
 
   private async findTweetOrThrow(tweetId: string) {
@@ -177,6 +268,21 @@ export class TweetsService {
       likesCountRows.map((row) => [row.tweetId, parseInt(row.count, 10)]),
     );
 
+    const repliesCountRows = await this.tweetRepository
+      .createQueryBuilder('tweet')
+      .select('tweet.parentTweetId', 'parentTweetId')
+      .addSelect('COUNT(*)', 'count')
+      .where('tweet.parentTweetId IN (:...tweetIds)', { tweetIds })
+      .groupBy('tweet.parentTweetId')
+      .getRawMany<{ parentTweetId: string; count: string }>();
+
+    const repliesCountByTweet = new Map(
+      repliesCountRows.map((row) => [
+        row.parentTweetId,
+        parseInt(row.count, 10),
+      ]),
+    );
+
     const myLikes = await this.likeRepository.find({
       where: { userId: requesterId, tweetId: In(tweetIds) },
       select: { tweetId: true },
@@ -193,6 +299,7 @@ export class TweetsService {
         },
         likesCountByTweet.get(tweet.id) ?? 0,
         likedByMeSet.has(tweet.id),
+        repliesCountByTweet.get(tweet.id) ?? 0,
       ),
     );
   }
@@ -202,14 +309,17 @@ export class TweetsService {
     author: TweetAuthorSummary,
     likesCount: number,
     likedByMe: boolean,
+    repliesCount: number,
   ): TweetResponse {
     return {
       id: tweet.id,
       content: tweet.content,
       authorId: tweet.authorId,
       author,
+      parentTweetId: tweet.parentTweetId,
       likesCount,
       likedByMe,
+      repliesCount,
       createdAt: tweet.createdAt,
       updatedAt: tweet.updatedAt,
     };

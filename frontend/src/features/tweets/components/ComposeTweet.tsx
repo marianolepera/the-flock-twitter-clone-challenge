@@ -12,7 +12,19 @@ import { formatApiError } from '@/lib/format-api-error'
 import { cn } from '@/lib/cn'
 import { useAuthStore } from '@/stores/auth.store'
 
-export function ComposeTweet() {
+export interface ComposeTweetProps {
+  parentTweetId?: string
+  placeholder?: string
+  submitLabel?: string
+  fieldId?: string
+}
+
+export function ComposeTweet({
+  parentTweetId,
+  placeholder = "What's happening?",
+  submitLabel = 'Tweet',
+  fieldId = 'compose-tweet',
+}: ComposeTweetProps) {
   const user = useAuthStore((s) => s.user)
   const createMutation = useCreateTweet()
 
@@ -33,7 +45,10 @@ export function ComposeTweet() {
 
     setFieldError(null)
     createMutation.mutate(
-      { content: content.trim() },
+      {
+        content: content.trim(),
+        ...(parentTweetId ? { parentTweetId } : {}),
+      },
       {
         onSuccess: () => setContent(''),
       },
@@ -58,14 +73,14 @@ export function ComposeTweet() {
         />
 
         <div className="min-w-0 flex-1">
-          <label htmlFor="compose-tweet" className="sr-only">
-            What&apos;s happening?
+          <label htmlFor={fieldId} className="sr-only">
+            {placeholder}
           </label>
           <textarea
-            id="compose-tweet"
+            id={fieldId}
             name="content"
-            rows={3}
-            placeholder="What's happening?"
+            rows={parentTweetId ? 2 : 3}
+            placeholder={placeholder}
             value={content}
             onChange={(event) => setContent(event.target.value)}
             disabled={createMutation.isPending}
@@ -98,7 +113,7 @@ export function ComposeTweet() {
               {createMutation.isPending ? (
                 <Spinner size="sm" label="Posting tweet" />
               ) : (
-                'Tweet'
+                submitLabel
               )}
             </Button>
           </div>

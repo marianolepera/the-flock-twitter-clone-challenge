@@ -12,6 +12,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ProfileRedirectPage } from '@/pages/ProfileRedirectPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { SearchPage } from '@/pages/SearchPage'
+import { TweetThreadPage } from '@/pages/TweetThreadPage'
 import { UserProfilePage } from '@/pages/UserProfilePage'
 import { paths } from '@/routes/paths'
 
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: paths.home, element: <HomePage /> },
+          { path: '/tweets/:tweetId', element: <TweetThreadPage /> },
           { path: paths.notifications, element: <NotificationsPage /> },
           { path: paths.search, element: <SearchPage /> },
           { path: paths.profileMe, element: <ProfileRedirectPage /> },

@@ -5,6 +5,7 @@ import {
   getNotifications,
   getUnreadNotificationCount,
   markAllNotificationsRead,
+  markNotificationRead,
 } from '@/api/notifications/notifications-api'
 
 vi.mock('@/api/client', () => ({
@@ -47,5 +48,21 @@ describe('notifications-api', () => {
     await expect(markAllNotificationsRead()).resolves.toEqual({ updated: 3 })
 
     expect(apiClient.patch).toHaveBeenCalledWith('/notifications/read')
+  })
+
+  it('markNotificationRead calls PATCH /notifications/:id/read', async () => {
+    const payload = {
+      id: 'n1',
+      type: 'like' as const,
+      actor: { id: 'u1', username: 'alice', avatarUrl: null },
+      tweet: { id: 't1', content: 'Hello' },
+      readAt: '2024-06-04T12:00:00.000Z',
+      createdAt: '2024-06-04T11:00:00.000Z',
+    }
+    vi.mocked(apiClient.patch).mockResolvedValue({ data: payload })
+
+    await expect(markNotificationRead('n1')).resolves.toEqual(payload)
+
+    expect(apiClient.patch).toHaveBeenCalledWith('/notifications/n1/read')
   })
 })

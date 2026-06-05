@@ -343,15 +343,15 @@ Full reference: **[backend/README.md](./backend/README.md)**.
 
 ## Bonus features (challenge)
 
-The challenge asks for **at least two** optional bonuses. This repo implements **three**:
 
 | Bonus | Status | Summary |
 |-------|--------|---------|
 | **Docker Compose** | Done | Full stack: Postgres + API + UI — [Quick start](#quick-start--docker-full-stack-recommended) |
 | **Notifications** | Done | REST inbox + unread badge + mark-all-read button |
 | **Real-time (WebSockets)** | Done | [Socket.IO](https://socket.io/) timeline + notification push |
+| **Reply threads** | Done | Reply to tweets, thread page at `/tweets/:id`, reply notifications |
 
-Not implemented (out of scope for now): tweet **images**, **reply threads**.
+
 
 ### Notifications
 
@@ -417,7 +417,6 @@ Protocol details and payloads: **[backend/README.md — WebSockets](./backend/RE
 
 See [backend/README.md](./backend/README.md#known-limitations).
 
-- No tweet **images** or **reply threads**.
 - User search by **username** and **email** (no separate display name).
 - Profiles and user search require JWT.
 - Real-time is **push + manual refresh** on the timeline (not live insertion of tweets in the list).

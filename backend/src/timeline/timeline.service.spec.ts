@@ -56,6 +56,9 @@ describe('TimelineService', () => {
     authorId: 'u1',
     author: { ...author, id: 'u1', username: 'alice' },
     likes: [],
+    parentTweetId: null,
+    parent: null,
+    replies: [],
     createdAt: new Date('2024-06-03T12:00:00.000Z'),
     updatedAt: new Date('2024-06-03T12:00:00.000Z'),
   };
@@ -66,6 +69,9 @@ describe('TimelineService', () => {
     authorId: 'u2',
     author,
     likes: [],
+    parentTweetId: null,
+    parent: null,
+    replies: [],
     createdAt: new Date('2024-06-03T11:00:00.000Z'),
     updatedAt: new Date('2024-06-03T11:00:00.000Z'),
   };

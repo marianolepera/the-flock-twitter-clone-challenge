@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventsGateway } from '../events/events.gateway';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
@@ -44,7 +44,9 @@ export class NotificationsService {
       actorId: params.actorId,
       type: params.type,
       tweetId:
-        params.type === NotificationType.LIKE ? (params.tweetId ?? null) : null,
+        params.type === NotificationType.FOLLOW
+          ? null
+          : (params.tweetId ?? null),
     });
 
     const saved = await this.notificationRepository.save(notification);
@@ -97,6 +99,27 @@ export class NotificationsService {
     );
 
     return { updated: result.affected ?? 0 };
+  }
+
+  async markOneRead(
+    recipientId: string,
+    notificationId: string,
+  ): Promise<NotificationResponse> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id: notificationId, recipientId },
+      relations: ['actor', 'tweet'],
+    });
+
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    if (notification.readAt === null) {
+      notification.readAt = new Date();
+      await this.notificationRepository.save(notification);
+    }
+
+    return this.toResponse(notification);
   }
 
   private toResponse(notification: Notification): NotificationResponse {

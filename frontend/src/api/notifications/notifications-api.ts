@@ -32,3 +32,10 @@ export async function markAllNotificationsRead() {
   )
   return data
 }
+
+export async function markNotificationRead(notificationId: string) {
+  const { data } = await apiClient.patch<Notification>(
+    `/notifications/${notificationId}/read`,
+  )
+  return data
+}

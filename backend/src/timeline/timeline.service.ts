@@ -26,6 +26,7 @@ export class TimelineService {
       .createQueryBuilder('tweet')
       .leftJoinAndSelect('tweet.author', 'author')
       .where('tweet.authorId IN (:...authorIds)', { authorIds })
+      .andWhere('tweet.parentTweetId IS NULL')
       .orderBy('tweet.createdAt', 'DESC')
       .addOrderBy('tweet.id', 'DESC')
       .take(take + 1);

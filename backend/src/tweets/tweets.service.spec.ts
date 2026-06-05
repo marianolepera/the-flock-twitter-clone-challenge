@@ -85,6 +85,8 @@ describe('TweetsService', () => {
       authorId: 'u1',
       likesCount: 0,
       likedByMe: false,
+      repliesCount: 0,
+      parentTweetId: null,
       author: authorSummary,
     });
 
@@ -166,6 +168,9 @@ describe('TweetsService', () => {
         updatedAt: new Date(),
       },
       likes: [],
+      parentTweetId: null,
+      parent: null,
+      replies: [],
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-02'),
     };
@@ -173,14 +178,22 @@ describe('TweetsService', () => {
     (userRepo.findOne as jest.Mock).mockResolvedValue({ id: 'u1' });
     (tweetRepo.findAndCount as jest.Mock).mockResolvedValue([[tweet], 1]);
 
-    const qb = {
+    const likesQb = {
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       groupBy: jest.fn().mockReturnThis(),
       getRawMany: jest.fn().mockResolvedValue([{ tweetId: 't1', count: '2' }]),
     };
-    (likeRepo.createQueryBuilder as jest.Mock).mockReturnValue(qb);
+    const repliesQb = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+    (likeRepo.createQueryBuilder as jest.Mock).mockReturnValue(likesQb);
+    (tweetRepo.createQueryBuilder as jest.Mock).mockReturnValue(repliesQb);
     (likeRepo.find as jest.Mock).mockResolvedValue([{ tweetId: 't1' }]);
 
     await expect(service.getByUsername('alice', 'u2', 1, 10)).resolves.toEqual({
@@ -210,6 +223,7 @@ describe('TweetsService', () => {
     (likeRepo.create as jest.Mock).mockImplementation((x) => x);
     (likeRepo.save as jest.Mock).mockResolvedValue({});
     (likeRepo.count as jest.Mock).mockResolvedValue(1);
+    (tweetRepo.count as jest.Mock).mockResolvedValue(0);
     (userRepo.findOne as jest.Mock).mockResolvedValue(authorSummary);
 
     await expect(service.like('t1', 'u2')).resolves.toMatchObject({
@@ -277,18 +291,29 @@ describe('TweetsService', () => {
         updatedAt: new Date(),
       },
       likes: [],
+      parentTweetId: null,
+      parent: null,
+      replies: [],
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-02'),
     };
 
-    const qb = {
+    const likesQb = {
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       groupBy: jest.fn().mockReturnThis(),
       getRawMany: jest.fn().mockResolvedValue([]),
     };
-    (likeRepo.createQueryBuilder as jest.Mock).mockReturnValue(qb);
+    const repliesQb = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+    (likeRepo.createQueryBuilder as jest.Mock).mockReturnValue(likesQb);
+    (tweetRepo.createQueryBuilder as jest.Mock).mockReturnValue(repliesQb);
     (likeRepo.find as jest.Mock).mockResolvedValue([]);
 
     await expect(service.mapTweetsWithLikes([tweet], 'u2')).resolves.toEqual([
@@ -296,6 +321,7 @@ describe('TweetsService', () => {
         id: 't1',
         likesCount: 0,
         likedByMe: false,
+        repliesCount: 0,
       }),
     ]);
   });

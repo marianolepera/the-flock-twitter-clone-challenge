@@ -228,4 +228,66 @@ describe('NotificationsService', () => {
 
     await expect(service.markAllRead('u1')).resolves.toEqual({ updated: 0 });
   });
+
+  it('markOneRead marks an unread notification as read', async () => {
+    const createdAt = new Date('2024-01-01T00:00:00.000Z');
+    const notification = {
+      id: 'n1',
+      type: NotificationType.LIKE,
+      readAt: null,
+      createdAt,
+      actor: {
+        id: 'u1',
+        username: 'alice',
+        avatarUrl: 'https://example.com/a.png',
+      },
+      tweet: { id: 't1', content: 'Hello' },
+    };
+
+    (notificationRepo.findOne as jest.Mock).mockResolvedValue(notification);
+    (notificationRepo.save as jest.Mock).mockImplementation((n) => n);
+
+    await expect(service.markOneRead('u2', 'n1')).resolves.toEqual(
+      expect.objectContaining({
+        id: 'n1',
+        readAt: expect.any(Date) as Date,
+      }),
+    );
+
+    expect(notificationRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ readAt: expect.any(Date) as Date }),
+    );
+  });
+
+  it('markOneRead returns notification without saving when already read', async () => {
+    const readAt = new Date('2024-01-02T00:00:00.000Z');
+    const notification = {
+      id: 'n1',
+      type: NotificationType.FOLLOW,
+      readAt,
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      actor: {
+        id: 'u1',
+        username: 'alice',
+        avatarUrl: 'https://example.com/a.png',
+      },
+      tweet: null,
+    };
+
+    (notificationRepo.findOne as jest.Mock).mockResolvedValue(notification);
+
+    await expect(service.markOneRead('u2', 'n1')).resolves.toEqual(
+      expect.objectContaining({ readAt }),
+    );
+
+    expect(notificationRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('markOneRead throws when notification is not found', async () => {
+    (notificationRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(service.markOneRead('u2', 'missing')).rejects.toThrow(
+      'Notification not found',
+    );
+  });
 });

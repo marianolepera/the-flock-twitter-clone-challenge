@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -27,6 +28,11 @@ export class TweetsController {
   @HttpCode(HttpStatus.CREATED)
   create(@Request() req: AuthRequest, @Body() dto: CreateTweetDto) {
     return this.tweetsService.create(req.user.id, dto);
+  }
+
+  @Get(':id/thread')
+  getThread(@Request() req: AuthRequest, @Param('id') id: string) {
+    return this.tweetsService.getThread(id, req.user.id);
   }
 
   @Delete(':id')

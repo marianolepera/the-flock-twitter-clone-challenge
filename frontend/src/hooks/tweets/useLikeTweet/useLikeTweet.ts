@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { likeTweet } from '@/api/tweets/tweets-api'
 import { notificationKeys } from '@/hooks/notifications/query-keys'
 import { timelineKeys } from '@/hooks/timeline/query-keys'
+import { tweetKeys } from '@/hooks/tweets/query-keys'
 import {
   restoreTweetCaches,
   snapshotTweetCaches,
@@ -16,6 +17,7 @@ export function useLikeTweet() {
     mutationFn: likeTweet,
     onMutate: async (tweetId) => {
       await queryClient.cancelQueries({ queryKey: timelineKeys.all })
+      await queryClient.cancelQueries({ queryKey: tweetKeys.all })
 
       const snapshot = snapshotTweetCaches(queryClient)
 

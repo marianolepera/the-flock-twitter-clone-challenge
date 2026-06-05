@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -26,6 +27,19 @@ export class Tweet {
 
   @OneToMany(() => Like, (like) => like.tweet)
   likes: Like[];
+
+  @Column({ type: 'uuid', nullable: true })
+  parentTweetId: string | null;
+
+  @ManyToOne(() => Tweet, (tweet) => tweet.replies, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'parentTweetId' })
+  parent: Tweet | null;
+
+  @OneToMany(() => Tweet, (tweet) => tweet.parent)
+  replies: Tweet[];
 
   @CreateDateColumn()
   createdAt: Date;
