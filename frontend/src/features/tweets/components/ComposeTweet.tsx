@@ -9,6 +9,7 @@ import {
   validateTweetContent,
 } from '@/features/tweets/validation'
 import { formatApiError } from '@/lib/format-api-error'
+import { isTweetNotFoundError } from '@/lib/tweet-errors'
 import { cn } from '@/lib/cn'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -17,6 +18,7 @@ export interface ComposeTweetProps {
   placeholder?: string
   submitLabel?: string
   fieldId?: string
+  onTweetNotFound?: () => void
 }
 
 export function ComposeTweet({
@@ -24,6 +26,7 @@ export function ComposeTweet({
   placeholder = "What's happening?",
   submitLabel = 'Tweet',
   fieldId = 'compose-tweet',
+  onTweetNotFound,
 }: ComposeTweetProps) {
   const user = useAuthStore((s) => s.user)
   const createMutation = useCreateTweet()
@@ -51,13 +54,20 @@ export function ComposeTweet({
       },
       {
         onSuccess: () => setContent(''),
+        onError: (error) => {
+          if (parentTweetId && isTweetNotFoundError(error)) {
+            onTweetNotFound?.()
+          }
+        },
       },
     )
   }
 
-  const apiError = createMutation.isError
-    ? formatApiError(createMutation.error, 'Could not post tweet')
-    : null
+  const apiError =
+    createMutation.isError &&
+    !(parentTweetId && isTweetNotFoundError(createMutation.error))
+      ? formatApiError(createMutation.error, 'Could not post tweet')
+      : null
 
   return (
     <form
@@ -69,6 +79,7 @@ export function ComposeTweet({
         <Avatar
           src={user?.avatarUrl}
           alt={user?.username ?? 'You'}
+          email={user?.email}
           size="md"
         />
 

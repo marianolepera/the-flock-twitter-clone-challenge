@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
+import { useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
@@ -7,7 +8,9 @@ import { TweetCard } from '@/features/tweets/components/TweetCard'
 import { TweetCardSkeleton } from '@/features/tweets/components/TweetCardSkeleton'
 import { useGetThread } from '@/hooks/tweets/useGetThread/useGetThread'
 import { formatApiError } from '@/lib/format-api-error'
+import { isTweetNotFoundError } from '@/lib/tweet-errors'
 import { paths } from '@/routes/paths'
+import { useSnackbarStore } from '@/stores/snackbar.store'
 import { useAuthStore } from '@/stores/auth.store'
 
 export function TweetThreadPage() {
@@ -17,6 +20,14 @@ export function TweetThreadPage() {
   const { data, isLoading, isError, isSuccess, error } = useGetThread(tweetId)
 
   const showThread = isSuccess && data && !isError
+  const threadMissing = isError && isTweetNotFoundError(error)
+
+  useEffect(() => {
+    if (!threadMissing) return
+
+    useSnackbarStore.getState().show('This tweet was deleted')
+    navigate(paths.home, { replace: true })
+  }, [threadMissing, navigate])
 
   return (
     <div>
@@ -39,7 +50,7 @@ export function TweetThreadPage() {
         />
       ) : null}
 
-      {isError ? (
+      {isError && !threadMissing ? (
         <p className="px-4 py-6 text-sm text-danger" role="alert">
           {formatApiError(error, 'Could not load thread')}
         </p>
@@ -72,6 +83,10 @@ export function TweetThreadPage() {
             placeholder="Post your reply"
             submitLabel="Reply"
             fieldId="compose-reply"
+            onTweetNotFound={() => {
+              useSnackbarStore.getState().show('This tweet was deleted')
+              navigate(paths.home, { replace: true })
+            }}
           />
         </>
       ) : null}

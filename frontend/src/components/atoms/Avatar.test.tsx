@@ -16,6 +16,20 @@ describe('Avatar', () => {
   it('renders initials when src is missing', () => {
     render(<Avatar alt="alice" />)
 
-    expect(screen.getByRole('img', { name: /alice/i })).toHaveTextContent('A')
+    expect(screen.getByRole('img', { name: /alice/i })).toHaveTextContent('AL')
+  })
+
+  it('renders initials from email for placeholder dicebear avatars', () => {
+    render(
+      <Avatar
+        src="https://api.dicebear.com/7.x/initials/svg?seed=default"
+        alt="marianolepera"
+        email="mariano.lepera@example.com"
+      />,
+    )
+
+    expect(screen.getByRole('img', { name: /marianolepera/i })).toHaveTextContent(
+      'ML',
+    )
   })
 })

@@ -64,7 +64,12 @@ export function ProfileHeader({
     <header className="border-b border-border px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <Avatar src={user.avatarUrl} alt={user.username} size="xl" />
+          <Avatar
+            src={user.avatarUrl}
+            alt={user.username}
+            email={user.email}
+            size="xl"
+          />
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold text-foreground">
               @{user.username}
