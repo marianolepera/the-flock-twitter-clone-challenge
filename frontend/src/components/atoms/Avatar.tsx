@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { isPlaceholderAvatar, userInitials } from '@/lib/user-initials'
 
 const sizes = {
   sm: 'size-8 text-xs',
@@ -12,23 +13,22 @@ export type AvatarSize = keyof typeof sizes
 export interface AvatarProps {
   src?: string | null
   alt: string
+  email?: string
   size?: AvatarSize
   className?: string
 }
 
-function initialsFromAlt(alt: string) {
-  return alt
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
+export function Avatar({
+  src,
+  alt,
+  email,
+  size = 'md',
+  className,
+}: AvatarProps) {
+  const initials = userInitials(alt, email)
+  const showImage = src && !isPlaceholderAvatar(src)
 
-export function Avatar({ src, alt, size = 'md', className }: AvatarProps) {
-  const initials = initialsFromAlt(alt)
-
-  if (src) {
+  if (showImage) {
     return (
       <img
         src={src}
