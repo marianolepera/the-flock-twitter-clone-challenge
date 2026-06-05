@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 
 import { NotificationItem } from '@/features/notifications/components/NotificationItem'
+import { NotificationItemSkeleton } from '@/features/notifications/components/NotificationItemSkeleton'
 import { Button } from '@/components/atoms/Button'
-import { Spinner } from '@/components/atoms/Spinner'
+import { FeedSkeletonList } from '@/components/molecules/FeedSkeletonList'
 import { useGetNotifications } from '@/hooks/notifications/useGetNotifications/useGetNotifications'
 import { formatApiError } from '@/lib/format-api-error'
 
@@ -41,9 +42,11 @@ export function NotificationsFeed() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-16">
-        <Spinner size="lg" label="Loading notifications" />
-      </div>
+      <FeedSkeletonList
+        label="Loading notifications"
+        count={6}
+        renderItem={() => <NotificationItemSkeleton />}
+      />
     )
   }
 
@@ -87,10 +90,8 @@ export function NotificationsFeed() {
         ))}
       </ul>
 
-      <div ref={loadMoreRef} className="flex justify-center py-6" aria-hidden>
-        {isFetchingNextPage ? (
-          <Spinner size="md" label="Loading more notifications" />
-        ) : null}
+      <div ref={loadMoreRef} className="min-h-px" aria-hidden>
+        {isFetchingNextPage ? <NotificationItemSkeleton /> : null}
       </div>
     </section>
   )
